@@ -14,8 +14,9 @@
 
 package org.google.android.odk.manage.server.model;
 
-import java.util.List;
+import com.google.appengine.api.datastore.Key;
 
+import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
@@ -33,6 +34,9 @@ public class DeviceGroup {
   }
 
   @PrimaryKey
+  @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+  public Key key;
+  
   @Persistent
   public String name;
 

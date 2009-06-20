@@ -1,82 +1,63 @@
 package org.google.android.odk.manage.server;
 
-import com.google.appengine.repackaged.com.google.common.base.Log;
-
-import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+import org.google.android.odk.manage.server.model.Device;
+import org.google.android.odk.manage.server.model.PMF;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
+import java.util.logging.Logger;
 
+import javax.jdo.Extent;
+import javax.jdo.PersistenceManager;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 public class RegisterServlet extends HttpServlet {
 
+  private static final Logger log = Logger.getLogger(AddTaskServlet.class.getName());
+  
   @Override
   public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    // debug code
+    PersistenceManager pm = PMF.get().getPersistenceManager();
+    Extent<Device> extent = pm.getExtent(Device.class, false);
+    for (Device d : extent) {
+      if (d.imei != null)
+        resp.getWriter().write(d.imei);
+      resp.getWriter().write(" (IMEI) \n");
+    }
+    extent.closeAll();
+  }
+  @Override
+  public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+//    try{
+//      Map <String,String>paramMap = new HashMap<String,String>();
+//      Enumeration<String> paramNames = req.getParameterNames();
+//      while(paramNames.hasMoreElements()){
+//        String paramName = (String) paramNames.nextElement();
+//        paramMap.put(paramName,req.getParameterValues(paramName)[0]);
+//      }
     
-    resp.setContentType("text/xml");
-    PrintWriter out = resp.getWriter();
-    Document doc = createXmlDoc("tasklist");
-    Element root = doc.getDocumentElement();
-    root.setAttribute("imei", req.getParameter("imei"));
-    Element e = doc.createElement("task");
-    e.setAttribute("type", "downloadForm");
-    e.setAttribute("url", "http://www.example.com/form.xml");
-    e.setAttribute("name", "AIDS Surveillance Form");
-    root.appendChild(e);
-    serialiseXml(doc, out);
+      log.severe("IMEI: " + req.getParameter("imei"));
+      registerDevice(req.getParameter("imei"), req.getParameter("num"));
+      log.info("Device registered");
+//    } catch (IllegalArgumentException e){
+//      log.severe("Illegal argument exception - IMEI probably null (new stuff)");
+//      resp.sendError(400);
+//    }
+    
   }
-  
-  
-  // we're using DOM for now - memory-intensive, but OK for these uses
-  private Document createXmlDoc(String rootElement){
-    // Create XML DOM document (Memory consuming).
-    org.w3c.dom.Document xmldoc = null;
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    DocumentBuilder builder = null;
-    try {
-      builder = factory.newDocumentBuilder();
-    } catch (ParserConfigurationException e){
-    }
-    DOMImplementation impl = builder.getDOMImplementation();
-    Element e = null;
-    Node n = null;
-    // Document.
-    return impl.createDocument(null, rootElement, null);
-  }
-  
-  private void serialiseXml(Document doc, Writer out){
-    DOMSource domSource = new DOMSource(doc.getDocumentElement());
-    StreamResult streamResult = new StreamResult(out);
-    TransformerFactory tf = TransformerFactory.newInstance();
-    Transformer serializer = null;
-    try{
-      serializer = tf.newTransformer();
-    } catch (TransformerConfigurationException e) {
-    }
-    serializer.setOutputProperty(OutputKeys.ENCODING,"ISO-8859-1");
-    serializer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM,"users.dtd");
-    serializer.setOutputProperty(OutputKeys.INDENT,"yes");
-    try{
-      serializer.transform(domSource, streamResult); 
-    } catch (TransformerException e) {
-    }
-  }
-}
 
+  
+  public void registerDevice(String imei, String phoneNumber){
+
+    Device device = new Device(imei, phoneNumber);
+    PersistenceManager pm = PMF.get().getPersistenceManager();
+    try {
+      pm.makePersistent(device);
+    } finally {
+      pm.close();
+    }
+  }
+  
+}

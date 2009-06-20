@@ -1,4 +1,4 @@
-package org.google.android.odk.manage.server;
+package org.google.android.odk.manage.server.model;
 
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManagerFactory;

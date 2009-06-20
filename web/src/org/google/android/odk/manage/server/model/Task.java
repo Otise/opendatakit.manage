@@ -14,6 +14,10 @@
 
 package org.google.android.odk.manage.server.model;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
@@ -30,7 +34,7 @@ public class Task {
   
   public enum TaskType {
     DOWNLOAD_FORM("downloadForm"),
-    SEND_FORMS("sendCompletedForms");
+    SEND_FORMS("submitForm");
     private final String xmlTag;
     TaskType(String xmlTag){
       this.xmlTag = xmlTag;
@@ -38,7 +42,16 @@ public class Task {
     public String xmlTag(){ return xmlTag; }
   }
   
-  public Task(){
+  public enum TaskStatus {
+    PENDING,
+    FAILED,
+    SUCCESS
+  }
+  
+  public Task(TaskType type){
+    this.type = type;
+    this.properties = new HashMap<String,String>();
+    this.status = TaskStatus.PENDING;
   }
 
   @PrimaryKey
@@ -46,6 +59,31 @@ public class Task {
   private Long id;
 
   @Persistent
-  private TaskType type;
+  public TaskType type;
+  
+  @Persistent
+  private TaskStatus status;
+  
+  //right now, not sure how to deal with different types of tasks, since JDO
+  //does not allow for polymorphism...so just using this generic but not really 
+  //typesafe approach for now
+  @Persistent
+  private Map<String,String> properties;
+  
+  public void setProperty(String name, String value){
+    properties.put(name, value);
+  }
+  public Set<String> getPropertyNames(){
+    return properties.keySet();
+  }
+  public String getProperty(String name){
+    return properties.get(name);
+  }
+  public TaskType getType(){
+    return type;
+  }
+  public TaskStatus getStatus(){
+    return status;
+  }
  
 }

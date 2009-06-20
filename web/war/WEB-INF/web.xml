@@ -28,7 +28,27 @@
   
   <servlet-mapping>
     <servlet-name>taskListServlet</servlet-name>
-    <url-pattern>/odk_manage/tasklist</url-pattern>
+    <url-pattern>/tasklist</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>registerServlet</servlet-name>
+    <servlet-class>org.google.android.odk.manage.server.RegisterServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>registerServlet</servlet-name>
+    <url-pattern>/register</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>addTaskServlet</servlet-name>
+    <servlet-class>org.google.android.odk.manage.server.AddTaskServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>addTaskServlet</servlet-name>
+    <url-pattern>/addTask</url-pattern>
   </servlet-mapping>
 
 </web-app>

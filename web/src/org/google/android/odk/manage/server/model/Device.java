@@ -14,6 +14,9 @@
 
 package org.google.android.odk.manage.server.model;
 
+import com.google.appengine.api.datastore.Key;
+
+import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
@@ -30,9 +33,13 @@ public class Device {
   public Device(String imei, String phoneNumber){
     this.imei = imei;
     this.phoneNumber = phoneNumber;
+    checkInvariants();
   }
 
   @PrimaryKey
+  @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+  public Long id;
+  
   @Persistent
   public String imei;
    
@@ -42,7 +49,16 @@ public class Device {
   @Persistent
   public String user;
   
+  //type DeviceGroup
   @Persistent
-  public DeviceGroup group;
+  public Key group;
+  
+  // this should eventually be pendingTasks and completedTasks?
+  @Persistent
+  public TaskList tasks;
+  
+  private void checkInvariants(){
+    assert(imei != null);
+  }
  
 }

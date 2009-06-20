@@ -1,7 +1,7 @@
 package org.google.android.odk.manage.server;
 
-import com.google.appengine.repackaged.com.google.common.base.Log;
-
+import org.google.android.odk.manage.server.model.Task;
+import org.google.android.odk.manage.server.model.TaskList;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -27,14 +27,25 @@ import javax.xml.transform.stream.StreamResult;
 
 public class TaskListServlet extends HttpServlet {
 
+  public static final String TASK_LIST_NAMESPACE = "http://www.openrosa.org/ns/tasks";
+  
   @Override
   public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     
+
     resp.setContentType("text/xml");
     PrintWriter out = resp.getWriter();
-    Document doc = createXmlDoc("tasklist");
+    Document doc = createXmlDoc(TASK_LIST_NAMESPACE,"tasklist");
     Element root = doc.getDocumentElement();
     root.setAttribute("imei", req.getParameter("imei"));
+    TaskList taskList = null;
+    for (Task task: taskList.tasks){
+      Element e = doc.createElement("task");
+      e.setAttribute("type", task.getType().xmlTag());
+      for (String property: task.getPropertyNames()){
+        e.setAttribute(property, task.getProperty(property));
+      }
+    }
     Element e = doc.createElement("task");
     e.setAttribute("type", "downloadForm");
     e.setAttribute("url", "http://www.example.com/form.xml");
@@ -45,7 +56,7 @@ public class TaskListServlet extends HttpServlet {
   
   
   // we're using DOM for now - memory-intensive, but OK for these uses
-  private Document createXmlDoc(String rootElement){
+  private Document createXmlDoc(String ns, String rootElement){
     // Create XML DOM document (Memory consuming).
     org.w3c.dom.Document xmldoc = null;
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -58,7 +69,7 @@ public class TaskListServlet extends HttpServlet {
     Element e = null;
     Node n = null;
     // Document.
-    return impl.createDocument(null, rootElement, null);
+    return impl.createDocument(ns, rootElement, null);
   }
   
   private void serialiseXml(Document doc, Writer out){

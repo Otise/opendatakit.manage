@@ -3,6 +3,7 @@ package org.google.android.odk.manage.server;
 import org.google.android.odk.manage.server.model.Device;
 
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,18 +28,12 @@ public class SmsReceiver extends HttpServlet {
     for (String param : content.split("&")) {
       String[] keyval = param.split("=");
       if (keyval.length == 2)
-        paramMap.put(keyval[0], keyval[1]);
+        paramMap.put(URLDecoder.decode(keyval[0]), URLDecoder.decode(keyval[1]));
     }
-    if (paramMap.containsKey("imei") || !paramMap.containsKey("num")){
+    try{
+      new RegisterServlet().registerDevice(paramMap);
+    } catch (IllegalArgumentException e){
       resp.sendError(400);
-      return;
-    }
-    Device device = new Device(paramMap.get("imei"), paramMap.get("num"));
-    PersistenceManager pm = PMF.get().getPersistenceManager();
-    try {
-      pm.makePersistent(device);
-    } finally {
-      pm.close();
     }
     resp.setContentType("text/html"); 
     resp.getWriter().println("SMS registration for " + paramMap.get("num") + " received.");

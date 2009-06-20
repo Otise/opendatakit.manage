@@ -14,8 +14,12 @@
 
 package org.google.android.odk.manage.server.model;
 
+import com.google.appengine.api.datastore.Key;
+
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
@@ -30,12 +34,24 @@ import javax.jdo.annotations.PrimaryKey;
 public class TaskList {
   
   public TaskList(){
+    tasks = new ArrayList<Task>();
   }
 
   @PrimaryKey
-  @Persistent
-  public String imei;
+  @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+  private Key key;
   
   public List<Task> tasks;
+  
+  @Persistent(mappedBy = "tasks")
+  private Device device;
+
+  public void addTask(Task t){
+    tasks.add(t);
+  }
+  public Task[] getTasks(){
+    // defensive copy
+    return (Task[]) tasks.toArray();
+  }
  
 }
