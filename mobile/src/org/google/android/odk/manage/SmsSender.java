@@ -78,8 +78,9 @@ public class SmsSender {
           }
       }, new IntentFilter(DELIVERED));        
       SmsManager sms = SmsManager.getDefault();
-      Log.i("OdkManage", "Sms sent: Recipient: " + phoneNumber + "; Message: " + message);
-      sms.sendTextMessage(phoneNumber, null, message, sentPI, deliveredPI);        
+      String fullMessage =  Constants.MANAGE_SMS_TOKEN + " " + message;
+      Log.i("OdkManage", "Sms sent: Recipient: " + phoneNumber + "; Message: " + fullMessage);
+      sms.sendTextMessage(phoneNumber, null, fullMessage, sentPI, deliveredPI);        
   }
   
 }

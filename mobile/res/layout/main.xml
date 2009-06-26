@@ -10,9 +10,6 @@
   <EditText android:id="@+id/user_id_text" 
            android:layout_width="fill_parent" 
            android:layout_height="wrap_content"/>
-  <View android:layout_height="1px"
-        android:layout_width="fill_parent"
-        android:background="#000000"/>
   <TextView android:id="@+id/sms_number_label" 
           android:layout_width="wrap_content" 
           android:layout_height="wrap_content" 
@@ -20,14 +17,6 @@
   <EditText android:id="@+id/sms_number_text" 
            android:layout_width="fill_parent" 
            android:layout_height="wrap_content"/>
-  <Button android:id="@+id/register_phone_button_sms"
-    android:layout_width="wrap_content" 
-    android:layout_height="wrap_content" 
-    android:text="@string/register_phone"
-    />
-  <View android:layout_height="1px"
-        android:layout_width="fill_parent"
-        android:background="#000000"/>
   <TextView android:id="@+id/server_url_label" 
           android:layout_width="wrap_content" 
           android:layout_height="wrap_content" 
@@ -36,9 +25,20 @@
            android:layout_width="fill_parent" 
            android:layout_height="wrap_content"
            android:text="http://odk-manage-dev.appspot.com"/>
+  <LinearLayout 
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
+  <Button android:id="@+id/register_phone_button_sms"
+    android:layout_width="wrap_content" 
+    android:layout_height="wrap_content" 
+    android:text="@string/register_phone_sms"
+    />
+
   <Button android:id="@+id/register_phone_button_http"
     android:layout_width="wrap_content" 
     android:layout_height="wrap_content" 
-    android:text="@string/register_phone"
+    android:text="@string/register_phone_http"
     />
+    </LinearLayout>
 </LinearLayout>

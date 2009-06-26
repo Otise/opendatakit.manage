@@ -52,7 +52,8 @@ the License.
 	<string name="quit_entry">Save and Exit</string>
 	<string name="change_language">Change Language</string>
   
-  <string name="register_phone">Register Phone</string>
+  <string name="register_phone_http">Register Phone by HTTP</string>
+  <string name="register_phone_sms">Register Phone by SMS</string>
   <string name="server_sms_num">Server SMS Number: </string>
   <string name="server_url">Server URL: </string>
   <string name="user_id">User ID:</string>

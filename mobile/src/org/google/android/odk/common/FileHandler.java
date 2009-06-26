@@ -2,7 +2,9 @@ package org.google.android.odk.common;
 
 import android.content.Context;
 import android.os.Environment;
+import android.util.Log;
 
+import org.google.android.odk.manage.Constants;
 import org.google.android.odk.manage.R;
 
 import java.io.File;
@@ -83,21 +85,26 @@ public class FileHandler {
   /**
    * Downloads a valid form from a url to a directory. If the file exists, it is 
    * overwritten.
-   * @return Filename of the file downloaded, or null if unsuccessful
+   * @return Pointer to the file downloaded, or null if unsuccessful
    */
-  public String getFormFromUrl(URL u, File downloadDirectory) throws IOException{
+  public File getFormFromUrl(URL u, File downloadDirectory) throws IOException{
     String filename = u.getFile();
     filename = filename.substring(filename.lastIndexOf('/') + 1);
-    if (filename.matches(SharedConstants.VALID_FILENAME)) 
+    if (filename.matches(SharedConstants.VALID_FILENAME)) {
+      Log.i(Constants.TAG,"Downloading form: " + filename);
       return getFileFromUrl(u, downloadDirectory);
-    else return null;
+    }
+    else {
+      Log.i(Constants.TAG,"Form name was not valid for download: " + filename);
+      return null;
+    }
   }
   
   /**
    * Downloads a file from a url to a directory
    * @return Filename of the file downloaded, or null if unsuccessful
    */
-  public String getFileFromUrl(URL u, File downloadDirectory) throws IOException{
+  public File getFileFromUrl(URL u, File downloadDirectory) throws IOException{
     // prevent deadlock when connection is invalid
     URLConnection c = u.openConnection();
     c.setConnectTimeout(SharedConstants.CONNECTION_TIMEOUT);
@@ -116,7 +123,7 @@ public class FileHandler {
     os.flush();
     os.close();
     is.close();
-    return filename;
+    return f;
   }
 
 }
