@@ -64,8 +64,11 @@ public class AdminActivity extends Activity {
         try{
           EditText numField = (EditText) findViewById(R.id.sms_number_text);
           EditText userIdField = (EditText) findViewById(R.id.user_id_text);
+
           new SmsSender(ctx).sendSMS(numField.getText().toString(), 
-              createRegisterSms());
+              Constants.SMS_REGISTER_ACTION,
+              createRegisterMap());
+          
         } catch (IllegalArgumentException e){
           Log.e(Constants.TAG,"Illegal argument in ODK Manage SMS Send");
         }
@@ -118,30 +121,12 @@ public class AdminActivity extends Activity {
     return paramMap;
   }
   
-  private String createRegisterSms(){
-    Map<String,String> regMap = createRegisterMap();
-    List<String> props = new ArrayList<String>();
-    for (String prop : regMap.keySet()){
-      if (prop != null && regMap.get(prop) != null){
-        props.add(prop + "=" + regMap.get(prop));
-      }
-    }
-    return Constants.SMS_REGISTER_ACTION + " " + join(props, "&");
-  }
-  
   public void newProperty(String name, String value, Map<String,String> paramMap){
     if (name == null || value == null)
       return;
     Log.d("OdkManage","New registration property: <" + name + "," + value + ">");
     paramMap.put(name, value);
   }
-  
-  public String join(List<String> s, String delimiter) {
-    if (s.isEmpty()) return "";
-    Iterator<String> iter = s.iterator();
-    StringBuffer buffer = new StringBuffer(iter.next());
-    while (iter.hasNext()) buffer.append(delimiter).append(iter.next());
-    return buffer.toString();
-  }
+ 
   
 }

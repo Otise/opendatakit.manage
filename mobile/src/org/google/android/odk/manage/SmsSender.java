@@ -1,5 +1,10 @@
 package org.google.android.odk.manage;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -16,6 +21,10 @@ public class SmsSender {
   
   public SmsSender(Context ctx){
     this.ctx = ctx;
+  }
+  
+  public void sendSMS(String phoneNumber, String action, Map<String,String> parameters){
+    sendSMS(phoneNumber, createSmsWithParameters(action, parameters));
   }
   
   //---sends an SMS message to another device---
@@ -81,6 +90,24 @@ public class SmsSender {
       String fullMessage =  Constants.MANAGE_SMS_TOKEN + " " + message;
       Log.i("OdkManage", "Sms sent: Recipient: " + phoneNumber + "; Message: " + fullMessage);
       sms.sendTextMessage(phoneNumber, null, fullMessage, sentPI, deliveredPI);        
+  }
+  
+  private String createSmsWithParameters(String action, Map<String,String> parameters){
+    List<String> props = new ArrayList<String>();
+    for (String prop : parameters.keySet()){
+      if (prop != null && parameters.get(prop) != null){
+        props.add(prop + "=" + parameters.get(prop));
+      }
+    }
+    return action + " " + join(props, "&");
+  }
+  
+  public String join(List<String> s, String delimiter) {
+    if (s.isEmpty()) return "";
+    Iterator<String> iter = s.iterator();
+    StringBuffer buffer = new StringBuffer(iter.next());
+    while (iter.hasNext()) buffer.append(delimiter).append(iter.next());
+    return buffer.toString();
   }
   
 }
