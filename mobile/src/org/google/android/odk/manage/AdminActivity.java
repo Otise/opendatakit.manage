@@ -10,13 +10,15 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
+import org.google.android.odk.common.Task;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class OdkManageAdmin extends Activity {
+public class AdminActivity extends Activity {
   
   private PhonePropertiesAdapter phoneProperties = null;
   private SharedPreferences settings;
@@ -27,6 +29,7 @@ public class OdkManageAdmin extends Activity {
   public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       settings = getSharedPreferences(Constants.PREFS_NAME, 0);
+      Log.w(Constants.TAG,"Parsed long: " + Long.parseLong("-2026936769"));
       init();
   }
   
@@ -56,7 +59,7 @@ public class OdkManageAdmin extends Activity {
     registerSmsButton.setOnClickListener(new OnClickListener(){
       @Override
       public void onClick(View v) {
-        Log.i("OdkManage","Sending phone registration SMS");
+        Log.i(Constants.TAG,"Sending phone registration SMS");
         SmsManager sm = SmsManager.getDefault();
         try{
           EditText numField = (EditText) findViewById(R.id.sms_number_text);
@@ -64,7 +67,7 @@ public class OdkManageAdmin extends Activity {
           new SmsSender(ctx).sendSMS(numField.getText().toString(), 
               createRegisterSms());
         } catch (IllegalArgumentException e){
-          Log.e("OdkManage","Illegal argument in ODK Manage SMS Send");
+          Log.e(Constants.TAG,"Illegal argument in ODK Manage SMS Send");
         }
       }   
     });
@@ -74,14 +77,25 @@ public class OdkManageAdmin extends Activity {
     registerHttpButton.setOnClickListener(new OnClickListener(){
       @Override
       public void onClick(View v) {
-        Log.i("OdkManage","Sending phone registration HTTP");
+        Log.i(Constants.TAG,"Sending phone registration HTTP");
         try{
           EditText urlField = (EditText) findViewById(R.id.server_url_text);
           Map<String,String> paramMap = createRegisterMap();
           new HttpAdapter().doPost(urlField.getText().toString() + "/register", paramMap);
         } catch (IllegalArgumentException e) {
-          Log.e("OdkManage","Illegal argument in ODK Manage SMS Send");
+          Log.e(Constants.TAG,"Illegal argument in ODK Manage SMS Send");
         }
+      }   
+    });
+    
+    Button getTasksButton = (Button) findViewById(R.id.get_tasks_button);
+    getTasksButton.setOnClickListener(new OnClickListener(){
+      @Override
+      public void onClick(View v) {
+        Log.i(Constants.TAG, "Get tasks");
+        IntentReceiver ir = new IntentReceiver();
+        ir.init(ctx);
+        ir.requestNewTasks();
       }   
     });
   }
@@ -112,7 +126,7 @@ public class OdkManageAdmin extends Activity {
         props.add(prop + "=" + regMap.get(prop));
       }
     }
-    return join(props, "&");
+    return Constants.SMS_REGISTER_ACTION + " " + join(props, "&");
   }
   
   public void newProperty(String name, String value, Map<String,String> paramMap){

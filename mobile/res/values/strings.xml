@@ -57,5 +57,7 @@ the License.
   <string name="server_sms_num">Server SMS Number: </string>
   <string name="server_url">Server URL: </string>
   <string name="user_id">User ID:</string>
+  
+  <string name="get_tasks">Get Tasks</string>
 
 </resources>
