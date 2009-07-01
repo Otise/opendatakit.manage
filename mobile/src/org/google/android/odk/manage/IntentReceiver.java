@@ -37,7 +37,7 @@ import javax.xml.parsers.ParserConfigurationException;
  * Receives intents corresponding to <ol><li>Received SMS Messages</li>
  * <li>Mobile or wifi network state changes</li></ol>
  * and responds appropriately (mostly by passing off information to the 
- * {@link OdkManage} Service.
+ * {@link OdkManageService} Service.
  * 
  * @author alerer@google.com (Adam Lerer)
  *
