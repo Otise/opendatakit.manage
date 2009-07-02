@@ -39,28 +39,22 @@ public class Task {
   public Task(long id, TaskType type, TaskStatus status){
     this.id = id;
     this.type = type;
-    this.properties = new HashMap<String,String>();
     this.status = status;
     checkInvariants();
   }
 
   private long id;
-
-  private Map<String,String> properties;
+  
+  private String name;
+  
+  private String url;
+  
+  private String extras;
   
   private TaskType type;
   
   private TaskStatus status;
   
-  public void setProperty(String name, String value){
-    properties.put(name, value);
-  }
-  public Set<String> getPropertyNames(){
-    return properties.keySet();
-  }
-  public String getProperty(String name){
-    return properties.get(name);
-  }
   public TaskType getType(){
     return type;
   }
@@ -91,6 +85,24 @@ public class Task {
   @Override
   public int hashCode(){
     return new Long(this.id).intValue();
+  }
+  public void setName(String name) {
+    this.name = name;
+  }
+  public String getName() {
+    return name;
+  }
+  public void setUrl(String url) {
+    this.url = url;
+  }
+  public String getUrl() {
+    return url;
+  }
+  public void setExtras(String extras) {
+    this.extras = extras;
+  }
+  public String getExtras() {
+    return extras;
   }
  
 }

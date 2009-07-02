@@ -128,14 +128,14 @@ public class DbAdapter {
     
     values.put(KEY_TASKS_ID, t.getUniqueId());
     values.put(KEY_TASKS_TYPE, t.getType().name());
-    values.put(KEY_TASKS_NAME, t.getProperty("name"));
-    values.put(KEY_TASKS_URL, t.getProperty("url"));
-    values.put(KEY_TASKS_EXTRAS, t.getProperty("extras"));
+    values.put(KEY_TASKS_NAME, t.getName());
+    values.put(KEY_TASKS_URL, t.getUrl());
+    values.put(KEY_TASKS_EXTRAS, t.getExtras());
     values.put(KEY_TASKS_STATUS, t.getStatus().name());
     
     Log.d(TAG, "Added task. Id: " + t.getUniqueId()
         + ", Type: "+ t.getType()
-        + ", URL: " + t.getProperty("url")
+        + ", URL: " + t.getUrl()
         + ", Status: " + t.getStatus());
     
     long id = mDb.insert(TASKS_TABLE, null, values);
@@ -256,7 +256,9 @@ public class DbAdapter {
               c.getLong(indexMap.get(KEY_TASKS_ID)),
               Enum.valueOf(TaskType.class, c.getString(indexMap.get(KEY_TASKS_TYPE))),
               Enum.valueOf(TaskStatus.class, c.getString(indexMap.get(KEY_TASKS_STATUS))));
-      task.setProperty("url", c.getString(indexMap.get(KEY_TASKS_URL)));
+      task.setName(c.getString(indexMap.get(KEY_TASKS_NAME)));
+      task.setUrl(c.getString(indexMap.get(KEY_TASKS_URL)));
+      task.setExtras(c.getString(indexMap.get(KEY_TASKS_EXTRAS)));
              
       tasks.add(task);
       c.moveToNext();
