@@ -3,6 +3,7 @@ package org.odk.manage.android;
 import org.odk.manage.android.R;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.telephony.gsm.SmsManager;
@@ -93,9 +94,10 @@ public class AdminActivity extends Activity {
       @Override
       public void onClick(View v) {
         Log.i(Constants.TAG, "Get tasks");
-        IntentReceiver ir = new IntentReceiver();
-        ir.init(ctx);
-        ir.requestNewTasks();
+        Intent i = new Intent(ctx, OdkManageService.class);
+        i.putExtra(OdkManageService.MESSAGE_TYPE_KEY, 
+            OdkManageService.MessageType.NEW_TASKS);
+        ctx.startService(i);
       }   
     });
   }

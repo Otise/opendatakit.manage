@@ -42,7 +42,7 @@ public class PhonePropertiesAdapter {
    * @return
    */
   public void registerListener(PendingIntent onChange){
-    //not yet implemented
+    
   }
   
 }

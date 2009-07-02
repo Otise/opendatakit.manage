@@ -26,16 +26,20 @@ import java.util.Map;
  */
 public class DbAdapter {
 
-  private static final String TASKS_TABLE = "tasks2";
+  private static final String TASKS_TABLE = "tasks3";
   public static final String KEY_TASKS_ID = "id";
   public static final String KEY_TASKS_TYPE = "type";
+  public static final String KEY_TASKS_NAME = "name";
   public static final String KEY_TASKS_URL = "url";
+  public static final String KEY_TASKS_EXTRAS = "extras";
   public static final String KEY_TASKS_STATUS = "status";
   public static final String[] ALL_TASKS_KEYS =
       new String[] {
           KEY_TASKS_ID,
           KEY_TASKS_TYPE,
+          KEY_TASKS_NAME,
           KEY_TASKS_URL,
+          KEY_TASKS_EXTRAS,
           KEY_TASKS_STATUS};
 
   /**
@@ -49,7 +53,11 @@ public class DbAdapter {
           + " long primary key, "
           + KEY_TASKS_TYPE
           + " text not null, "
+          + KEY_TASKS_NAME
+          + " text,"
           + KEY_TASKS_URL
+          + " text,"
+          + KEY_TASKS_EXTRAS
           + " text,"
           + KEY_TASKS_STATUS
           + " text not null);"; 
@@ -120,7 +128,9 @@ public class DbAdapter {
     
     values.put(KEY_TASKS_ID, t.getUniqueId());
     values.put(KEY_TASKS_TYPE, t.getType().name());
+    values.put(KEY_TASKS_NAME, t.getProperty("name"));
     values.put(KEY_TASKS_URL, t.getProperty("url"));
+    values.put(KEY_TASKS_EXTRAS, t.getProperty("extras"));
     values.put(KEY_TASKS_STATUS, t.getStatus().name());
     
     Log.d(TAG, "Added task. Id: " + t.getUniqueId()
