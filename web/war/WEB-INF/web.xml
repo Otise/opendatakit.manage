@@ -7,23 +7,14 @@
 
   <!-- Default page to serve -->
   <welcome-file-list>
-    <welcome-file>ODK_Manage.html</welcome-file>
+    <welcome-file>admin.html</welcome-file>
   </welcome-file-list>
   
   <!-- Servlets -->
-  <servlet>
-    <servlet-name>greetServlet</servlet-name>
-    <servlet-class>org.google.android.odk.manage.server.GreetingServiceImpl</servlet-class>
-  </servlet>
-  
-  <servlet-mapping>
-    <servlet-name>greetServlet</servlet-name>
-    <url-pattern>/odk_manage/greet</url-pattern>
-  </servlet-mapping>
   
   <servlet>
     <servlet-name>taskListServlet</servlet-name>
-    <servlet-class>org.google.android.odk.manage.server.TaskListServlet</servlet-class>
+    <servlet-class>org.odk.manage.server.servlet.TaskListServlet</servlet-class>
   </servlet>
   
   <servlet-mapping>
@@ -33,22 +24,61 @@
   
   <servlet>
     <servlet-name>registerServlet</servlet-name>
-    <servlet-class>org.google.android.odk.manage.server.RegisterServlet</servlet-class>
+    <servlet-class>org.odk.manage.server.servlet.RegisterServlet</servlet-class>
   </servlet>
   
   <servlet-mapping>
     <servlet-name>registerServlet</servlet-name>
     <url-pattern>/register</url-pattern>
   </servlet-mapping>
-  
   <servlet>
     <servlet-name>addTaskServlet</servlet-name>
-    <servlet-class>org.google.android.odk.manage.server.AddTaskServlet</servlet-class>
+    <servlet-class>org.odk.manage.server.servlet.AddTaskServlet</servlet-class>
   </servlet>
   
   <servlet-mapping>
     <servlet-name>addTaskServlet</servlet-name>
     <url-pattern>/addTask</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>sendSmsServlet</servlet-name>
+    <servlet-class>org.odk.manage.server.servlet.SendSmsServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>sendSmsServlet</servlet-name>
+    <url-pattern>/sendSms</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>smsReceiver</servlet-name>
+    <servlet-class>org.odk.manage.server.servlet.SmsReceiverServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>smsReceiver</servlet-name>
+    <url-pattern>/_ah/sms/message/</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>adminServlet</servlet-name>
+    <servlet-class>org.odk.manage.server.servlet.ManageAdminServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>adminServlet</servlet-name>
+    <url-pattern>/admin.html</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>deviceUpdateServlet</servlet-name>
+    <servlet-class>org.odk.manage.server.servlet.DeviceUpdateServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>deviceUpdateServlet</servlet-name>
+    <url-pattern>/update</url-pattern>
   </servlet-mapping>
 
 </web-app>
