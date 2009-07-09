@@ -25,9 +25,7 @@ import org.xml.sax.SAXException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,16 +33,20 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-//TODO(alerer): some of these methods need to be synchronized
+// TODO(alerer): some of these methods need to be synchronized
+// Actually, it may be better to run all tasks synchronously with a work queue
+// instead of running them concurrently - this will prevent overutilizing system 
+// resources, as well as reducing the risk of concurrency bugs. Just need to 
+// make sure that all tasks will timeout properly.
 public class OdkManageService extends Service{
 
   public static final String MESSAGE_TYPE_KEY = "messagetype";
   public static enum MessageType {
-    NEW_TASKS, CONNECTIVITY_CHANGE, PHONE_PROPERTIES_CHANGE, BOOT_COMPLETED;
+    NEW_TASKS, CONNECTIVITY_CHANGE, PHONE_PROPERTIES_CHANGE, BOOT_COMPLETED, PACKAGE_ADDED;
   }
   
   public FileHandler mHandler;
-  private SharedPreferences preferences;
+  private SharedPreferencesAdapter prefsAdapter;
   private DbAdapter dba;
   private PhonePropertiesAdapter propAdapter;
   private String imei;
@@ -84,6 +86,8 @@ public class OdkManageService extends Service{
       case PHONE_PROPERTIES_CHANGE:
         Log.d(Constants.TAG, "Phone properties changed.");
         break;
+      case PACKAGE_ADDED:
+        handlePackageAdded(i.getData());
       default:
         Log.w(Constants.TAG, "Unexpected MessageType in OdkManageService");
     }
@@ -105,7 +109,7 @@ public class OdkManageService extends Service{
   }
   
   /////////////////////////
-  
+ 
   private void init(){
     propAdapter = new PhonePropertiesAdapter(this);
     imei = propAdapter.getIMEI();
@@ -113,12 +117,26 @@ public class OdkManageService extends Service{
     dba = new DbAdapter(this, Constants.DB_NAME);
     dba.open();
     
-    preferences = getSharedPreferences(Constants.PREFS_NAME, 0);
+    prefsAdapter = new SharedPreferencesAdapter(this);
     mHandler = new FileHandler(this);
     
     registerPhonePropertiesChangeListener();
   }
   
+  private void handlePackageAdded(Uri pkg){
+    String pkgName = pkg.toString();
+    Log.d(Constants.TAG, "Package added detected: " + pkgName);
+    List<Task> pendingTasks = dba.getPendingTasks();
+    for (Task t: pendingTasks) {
+      if (t.getType().equals(TaskType.INSTALL_PACKAGE) && 
+          t.getExtras().equals(pkgName)){ // extras stores the package name
+        dba.setTaskStatus(t, TaskStatus.SUCCESS);
+        Log.d(Constants.TAG, "Task " + t.getUniqueId() + " (INSTALL_PACKAGE) successful.");
+        break;
+      }
+    }
+    
+  }
   private void registerPhonePropertiesChangeListener() {
 
     Intent mIntent = new Intent(this, OdkManageService.class);
@@ -202,11 +220,7 @@ List<Task> tasks = new ArrayList<Task>();
     Log.i(Constants.TAG, "Requesting new tasks");
 
     // remember that we have new tasks in case we can't retrieve them immediately
-    String baseUrl = preferences.getString(Constants.MANAGE_URL_PREF, null);
-    if (baseUrl == null) {
-      Log.e(Constants.TAG, "Server URL preference is null. Using default.");
-      baseUrl = Constants.DEFAULT_SERVER_DOMAIN;
-    }
+    String baseUrl = prefsAdapter.getString(Constants.PREF_URL_KEY, "");
     
     // get the tasks input stream from the URL
     InputStream newTaskStream = null;
@@ -277,11 +291,9 @@ List<Task> tasks = new ArrayList<Task>();
     
     for (Task t: tasks) {
       assert(t.getStatus().equals(TaskStatus.PENDING)); //just to check
-      boolean success = attemptTask(t);
-      if (success) {
-        Log.i(Constants.TAG, "Setting task status to success");
-        dba.setTaskStatus(t, TaskStatus.SUCCESS);
-      }
+      TaskStatus result = attemptTask(t);
+      Log.i(Constants.TAG, "Setting task status to " + result);
+      dba.setTaskStatus(t, result);
     }
     sendStatusUpdates();
   }
@@ -305,10 +317,7 @@ List<Task> tasks = new ArrayList<Task>();
       return true;
     }
     String updateXml = updateGen.toString();
-    String manageUrl = preferences.getString(Constants.MANAGE_URL_PREF, null);
-    if (manageUrl == null) {
-      manageUrl = Constants.DEFAULT_SERVER_DOMAIN;
-    }
+    String manageUrl = prefsAdapter.getString(Constants.PREF_URL_KEY, "");
     boolean success = 
       new HttpAdapter().doPost(manageUrl + "/" + Constants.UPDATE_PATH, updateXml);
     Log.i(Constants.TAG, "Status update message " + (success?"":"NOT ") + "successful");
@@ -320,7 +329,7 @@ List<Task> tasks = new ArrayList<Task>();
     return success;
   }
   
-  private boolean attemptTask(Task t){
+  private TaskStatus attemptTask(Task t){
     
     Log.i(Constants.TAG,
          "Attempting task\nType: " + t.getType() + 
@@ -333,12 +342,12 @@ List<Task> tasks = new ArrayList<Task>();
         return attemptInstallPackage(t);
       default:
         Log.w(Constants.TAG, "Unrecognized task type");
-        return false;
+        return TaskStatus.FAILED;
     }
   }
   
   //TODO(alerer): change this to firing off an intent to ODK Collect
-  private boolean attemptAddForm(Task t){
+  private TaskStatus attemptAddForm(Task t){
     assert(t.getType().equals(TaskType.ADD_FORM));
     
     FileHandler fh = new FileHandler(this);
@@ -347,7 +356,7 @@ List<Task> tasks = new ArrayList<Task>();
       formsDirectory = fh.getDirectory(SharedConstants.FORMS_PATH);
     } catch (IOException e){
       Log.e("OdkManage", "IOException getting forms directory");
-      return false;
+      return TaskStatus.PENDING;
     }
     
     String url = t.getUrl();
@@ -356,16 +365,16 @@ List<Task> tasks = new ArrayList<Task>();
           formsDirectory) != null;
       Log.i(Constants.TAG, 
           "Downloading form was " + (success? "":"not ") + "successfull.");
-      return success;
+      return success ? TaskStatus.SUCCESS : TaskStatus.PENDING;
     } catch (IOException e){
       Log.e(Constants.TAG, 
-          "IOException downloading form: " + url);
-      return false;
+          "IOException downloading form: " + url, e);
+      return TaskStatus.PENDING;
     }
   }
   
   //TODO(alerer): who should handle this? Probably Manage...just make sure.
-  private boolean attemptInstallPackage(Task t){
+  private TaskStatus attemptInstallPackage(Task t){
     assert(t.getType().equals(TaskType.INSTALL_PACKAGE));
     
     FileHandler fh = new FileHandler(this);
@@ -374,7 +383,7 @@ List<Task> tasks = new ArrayList<Task>();
       packagesDirectory = fh.getDirectory(Constants.PACKAGES_PATH);
     } catch (IOException e){
       Log.e("OdkManage", "IOException getting packages directory");
-      return false;
+      return TaskStatus.PENDING;
     }
     
     String url = t.getUrl();
@@ -402,36 +411,30 @@ List<Task> tasks = new ArrayList<Task>();
           //doesn't guarantee that the task has actually been carried out.
           //We really should be installing the tasks automatically
           Log.i(Constants.TAG, "Installing package successfull.");
-          return true;
+          if (t.getExtras() == null) {
+            return TaskStatus.SUCCESS; // since we don't know the package name, we have to just assume it worked.
+          } else {
+            return TaskStatus.PENDING;
+          }
         } catch (Exception e) {
           Log.e(Constants.TAG, 
               "Exception when doing manual-install package", e);
-          return false;
+          return TaskStatus.PENDING;
         }
     } catch (IOException e) {
       Log.e(Constants.TAG, 
           "IOException getting apk file: " + url);
-      return false;
+      return TaskStatus.PENDING;
     }
   }
   
-  private void setPreferences(String key, String value) {
-    SharedPreferences.Editor editor = preferences.edit();
-    editor.putString(key, value);
-    editor.commit();
-  }
-  
-  private void setPreferences(String key, boolean value) {
-    SharedPreferences.Editor editor = preferences.edit();
-    editor.putBoolean(key, value);
-    editor.commit();
-  }
-  
   private boolean getNewTasksPref(){
-    return preferences.getBoolean(Constants.NEW_TASKS_PREF, false);
+    return prefsAdapter.getPreferences().getBoolean(Constants.NEW_TASKS_PREF, false);
   }
   private void setNewTasksPref(boolean newValue){
-    setPreferences(Constants.NEW_TASKS_PREF, newValue);
+    SharedPreferences.Editor editor = prefsAdapter.getPreferences().edit();
+    editor.putBoolean(Constants.NEW_TASKS_PREF, newValue);
+    editor.commit();
   }
 
 }

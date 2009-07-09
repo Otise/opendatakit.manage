@@ -226,13 +226,15 @@ public class DbAdapter {
 
   /**
    * Sets the task status for this tasks, both locally and in the database.
-   * Also sets status synced to false.
+   * Also sets status synced to false if the status changes
    * @param t The task to be modified.
    * @param success The new status.
    */
   public void setTaskStatus(Task t, TaskStatus status) {
+    if (t.getStatus() != status) {
+      t.setStatusSynced(false);
+    }
     t.setStatus(status);
-    t.setStatusSynced(false);
     ContentValues values = new ContentValues();
    
     values.put(KEY_TASKS_STATUS, status.name());

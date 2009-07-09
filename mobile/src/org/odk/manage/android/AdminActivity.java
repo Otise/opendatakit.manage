@@ -17,37 +17,39 @@ import java.util.Map;
 public class AdminActivity extends Activity {
   
   private PhonePropertiesAdapter phoneProperties = null;
-  private SharedPreferences settings;
+  private SharedPreferencesAdapter prefsAdapter;
   
   private final Activity ctx = this;
   /** Called when the activity is first created. */
   @Override
   public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
-      settings = getSharedPreferences(Constants.PREFS_NAME, 0);
+      prefsAdapter = new SharedPreferencesAdapter(this);
       init();
   }
   
   @Override
   public void onStop(){
     super.onStop();
-    SharedPreferences.Editor editor = settings.edit();
-    editor.putString(Constants.MANAGE_URL_PREF, ((EditText) 
-        findViewById(R.id.server_url_text)).getText().toString());
-    editor.putString(Constants.MANAGE_SMS_PREF, ((EditText) 
-        findViewById(R.id.sms_number_text)).getText().toString());
-    editor.putString(Constants.MANAGE_USERID_PREF, ((EditText) 
+    Map<String, String> prefs = new HashMap<String, String>();
+    
+    prefs.put(Constants.PREF_USERID_KEY, ((EditText) 
         findViewById(R.id.user_id_text)).getText().toString());
-    editor.commit();
+    prefs.put(Constants.PREF_SMS_KEY, ((EditText) 
+        findViewById(R.id.sms_number_text)).getText().toString());
+    prefs.put(Constants.PREF_URL_KEY, ((EditText) 
+        findViewById(R.id.server_url_text)).getText().toString());
+    
+    prefsAdapter.setPreferences(prefs); // best effort
   }
   
   private void init(){
     setContentView(R.layout.main);
     
     // initialize user-entered fields
-    initText(R.id.user_id_text, Constants.MANAGE_USERID_PREF, "");
-    initText(R.id.sms_number_text, Constants.MANAGE_SMS_PREF, "");
-    initText(R.id.server_url_text, Constants.MANAGE_URL_PREF, Constants.DEFAULT_SERVER_DOMAIN);
+    initText(R.id.user_id_text, Constants.PREF_USERID_KEY);
+    initText(R.id.sms_number_text, Constants.PREF_SMS_KEY);
+    initText(R.id.server_url_text, Constants.PREF_URL_KEY);
     
     // create handler for SMS register button
     Button registerSmsButton = (Button) findViewById(R.id.register_phone_button_sms);
@@ -99,11 +101,10 @@ public class AdminActivity extends Activity {
     });
   }
   
-  private void initText(int field, String prefKey, String defaultText){
-    String initVal = settings.getString(prefKey, null);
+  private void initText(int field, String prefKey){
+    String initVal = prefsAdapter.getString(prefKey, "");
     if (initVal == null)
-      initVal = defaultText;
-    
+      initVal = "";
     ((EditText) findViewById(field)).setText(initVal);
   }
   

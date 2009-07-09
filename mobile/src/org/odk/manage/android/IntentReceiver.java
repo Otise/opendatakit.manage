@@ -20,7 +20,7 @@ import android.util.Log;
 public class IntentReceiver extends BroadcastReceiver {
   
 
-  private SharedPreferences preferences;
+  private SharedPreferencesAdapter prefsAdapter;
   
   @Override
   public void onReceive(Context ctx, Intent intent) {
@@ -68,7 +68,7 @@ public class IntentReceiver extends BroadcastReceiver {
   private void init(Context ctx){
 
     // initialize settings
-    preferences = ctx.getSharedPreferences(Constants.PREFS_NAME, 0);
+    prefsAdapter = new SharedPreferencesAdapter(ctx);
 
   }
   
@@ -94,7 +94,7 @@ public class IntentReceiver extends BroadcastReceiver {
   
   private boolean isNewTasksTrigger(String number, String message){
     //TODO(alerer): add 
-    String serverNum = preferences.getString(Constants.MANAGE_SMS_PREF, "");
+    String serverNum = prefsAdapter.getString(Constants.PREF_SMS_KEY, "");
     Log.d(Constants.TAG, "In isNewTasksTrigger");
     Log.d(Constants.TAG, "number: " + number + "; serverNum: " + serverNum);
 

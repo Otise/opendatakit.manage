@@ -15,17 +15,21 @@ public class Constants {
   /**
    * The pref key for the URL of the Manage server (with no /).
    */
-  public static final String MANAGE_URL_PREF = "serverurl";
+  public static final String PREF_URL_KEY = "serverurl";
+  
+  public static final String PREF_URL_DEFAULT = "http://sms-api-test.appspot.com";
   
   /**
    * The pref key for the phone number for the Manage server SMS gateway
    */
-  public static final String MANAGE_SMS_PREF = "serversms";
+  public static final String PREF_SMS_KEY = "serversms";
+  
+  public static final String PREF_SMS_DEFAULT = "48378";
   
   /**
    * The pref key for the operator username
    */
-  public static final String MANAGE_USERID_PREF = "userid";
+  public static final String PREF_USERID_KEY = "userid";
   
   /**
    * Pref key. Pref is true if ODK Manage believes that the tasklist should 
@@ -71,7 +75,6 @@ public class Constants {
    * Name of the local database.
    */
   public static final String DB_NAME = "odk_manage_db";
-  
-  public static final String DEFAULT_SERVER_DOMAIN = "http://sms-api-test.appspot.com";
+
   
 }

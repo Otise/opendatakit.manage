@@ -107,6 +107,8 @@ public class FileHandler {
    */
   public File getFileFromUrl(URL u, File downloadDirectory) throws IOException{
     // prevent deadlock when connection is invalid
+    
+    
     URLConnection c = u.openConnection();
     c.setConnectTimeout(SharedConstants.CONNECTION_TIMEOUT);
     c.setReadTimeout(SharedConstants.CONNECTION_TIMEOUT);
@@ -137,11 +139,9 @@ public class FileHandler {
    */
   private String getFilename(URLConnection c){
     String disposition = c.getHeaderField("Content-Disposition");
-    if (disposition != null) {
-      Matcher m = dispFilenamePattern.matcher(disposition);
-      if (m.find()){
-        return m.group(1);
-      }
+    String dispFilename = getFilenameFromDisposition(disposition);
+    if (dispFilename != null) {
+        return dispFilename;
     }
     try {
       String url = c.getURL().toString();
@@ -149,6 +149,33 @@ public class FileHandler {
     } catch (IndexOutOfBoundsException e) {
       return "";
     }
+  }
+  
+  
+  public String getFilenameFromDisposition(String disp){
+    if (disp == null) {
+      return null;
+    }
+    //TODO(alerer): we could put the patterns as static/class vars to make it faster
+    Pattern p1 = Pattern.compile("filename=(.)");
+    Matcher m1 = p1.matcher(disp);
+    
+    if (!m1.find() || m1.groupCount() < 1) {
+      return null;
+    }
+    String delim = m1.group(1);
+    
+    Pattern p2 = null;
+    if ("'".equals(delim) || "\"".equals(delim)) {
+      p2 = Pattern.compile("filename=" + delim + "([^" + delim + "]*)" + delim);
+    } else {
+      p2 = Pattern.compile("filename=([^ ]*)( .*)?$");
+    }
+    Matcher m2 = p2.matcher(disp);
+    if (!m2.find() || m2.groupCount() < 1) {
+      return null;
+    }
+    return m2.group(1);
   }
 
 }
