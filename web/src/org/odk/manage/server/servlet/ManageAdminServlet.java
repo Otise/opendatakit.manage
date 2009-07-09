@@ -1,6 +1,9 @@
-package org.odk.manage.server;
+package org.odk.manage.server.servlet;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.odk.manage.server.AdminAccountsConfig;
+import org.odk.manage.server.Constants;
+import org.odk.manage.server.XmlUtils;
 import org.odk.manage.server.model.DbAdapter;
 import org.odk.manage.server.model.Device;
 import org.w3c.dom.Document;

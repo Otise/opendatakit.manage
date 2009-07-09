@@ -1,5 +1,6 @@
-package org.odk.manage.server;
+package org.odk.manage.server.servlet;
 
+import org.odk.manage.server.AdminAccountsConfig;
 import org.odk.manage.server.model.DbAdapter;
 import org.odk.manage.server.model.Device;
 import org.odk.manage.server.model.Task;

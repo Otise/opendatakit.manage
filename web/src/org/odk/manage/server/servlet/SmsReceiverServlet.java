@@ -1,4 +1,4 @@
-package org.odk.manage.server;
+package org.odk.manage.server.servlet;
 
 import com.google.appengine.api.sms.Mobile;
 
@@ -16,9 +16,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @SuppressWarnings("serial")
-public class SmsReceiver extends HttpServlet {
+public class SmsReceiverServlet extends HttpServlet {
   
-  private static final Logger log = Logger.getLogger(SmsReceiver.class.getName());
+  private static final Logger log = Logger.getLogger(SmsReceiverServlet.class.getName());
   
   @Override
   public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {

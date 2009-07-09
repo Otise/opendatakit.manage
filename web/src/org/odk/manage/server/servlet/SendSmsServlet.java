@@ -1,8 +1,10 @@
-package org.odk.manage.server;
+package org.odk.manage.server.servlet;
 
 import com.google.appengine.api.sms.Mobile;
 import com.google.appengine.api.sms.SmsServiceFactory;
 
+import org.odk.manage.server.AdminAccountsConfig;
+import org.odk.manage.server.Constants;
 import org.odk.manage.server.model.DbAdapter;
 import org.odk.manage.server.model.Device;
 

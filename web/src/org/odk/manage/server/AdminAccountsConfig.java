@@ -11,7 +11,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-class AdminAccountsConfig {
+public class AdminAccountsConfig {
   private static final String[] adminAccounts = 
     new String[]{"adam.lerer@gmail.com",
                  "brunette.appengine@gmail.com",

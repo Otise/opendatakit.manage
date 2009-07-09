@@ -1,4 +1,4 @@
-package org.odk.manage.server;
+package org.odk.manage.server.servlet;
 
 import org.odk.manage.server.model.DbAdapter;
 

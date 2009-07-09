@@ -1,8 +1,9 @@
-package org.odk.manage.server;
+package org.odk.manage.server.servlet;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
+import org.odk.manage.server.XmlUtils;
 import org.odk.manage.server.model.DbAdapter;
 import org.odk.manage.server.model.Device;
 import org.odk.manage.server.model.Task;
