@@ -11,15 +11,19 @@
         <action android:name="android.net.wifi.WIFI_STATE_CHANGED"></action>
         <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
         <action android:name="android.net.conn.BACKGROUND_DATA_SETTING_CHANGED"/>
+        <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+        <action android:name="android.intent.action.BOOT_COMPLETED"></action>
+      </intent-filter>
+      <intent-filter>
         <action android:name="android.intent.action.PACKAGE_REMOVED"/>
         <action android:name="android.intent.action.PACKAGE_ADDED"/>
-        <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
         <data android:scheme="package"/>
       </intent-filter>
     </receiver>
         
     <activity android:name="AdminActivity">
       <intent-filter>
+        <!-- These should be removed - we don't want this activity generally accessible -->
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.LAUNCHER"/>
@@ -37,8 +41,6 @@
   <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     
-
-  
   <uses-permission android:name="android.permission.INTERNET"></uses-permission>
   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"></uses-permission>
   

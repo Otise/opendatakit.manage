@@ -1,13 +1,9 @@
 package org.odk.manage.android;
 
-import org.odk.common.android.FileHandler;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.telephony.gsm.SmsMessage;
 import android.util.Log;
@@ -51,7 +47,8 @@ public class IntentReceiver extends BroadcastReceiver {
     } 
     // Package added
     else if (action.equals(Intent.ACTION_PACKAGE_ADDED)) {
-      Log.w(Constants.TAG, "Picked up package added!");
+      Log.w(Constants.TAG, "Picked up package added: " + intent.getDataString() + "!");
+      
     } 
     // Unexpected intent
     else {

@@ -14,9 +14,6 @@
 
 package org.odk.common.android;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * 
@@ -36,14 +33,15 @@ public class Task {
     SUCCESS
   }
   
-  public Task(long id, TaskType type, TaskStatus status){
-    this.id = id;
+  public Task(String uniqueId, TaskType type, TaskStatus status){
+    this.id = uniqueId;
     this.type = type;
     this.status = status;
+    this.statusSynced = true;
     checkInvariants();
   }
-
-  private long id;
+ 
+  private String id;
   
   private String name;
   
@@ -55,6 +53,8 @@ public class Task {
   
   private TaskStatus status;
   
+  private boolean statusSynced;
+  
   public TaskType getType(){
     return type;
   }
@@ -65,12 +65,11 @@ public class Task {
     this.status = ts;
     checkInvariants();
   }
-  public long getUniqueId(){
+  public String getUniqueId(){
     return id;
   }
   
   private void checkInvariants(){
-    assert(id > 0);
     assert(type != null);
     assert(status != null);
   }
@@ -103,6 +102,12 @@ public class Task {
   }
   public String getExtras() {
     return extras;
+  }
+  public void setStatusSynced(boolean statusSynced) {
+    this.statusSynced = statusSynced;
+  }
+  public boolean isStatusSynced() {
+    return statusSynced;
   }
  
 }

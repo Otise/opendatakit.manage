@@ -1,7 +1,5 @@
 package org.odk.manage.android;
 
-import org.odk.manage.android.R;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -27,7 +25,6 @@ public class AdminActivity extends Activity {
   public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       settings = getSharedPreferences(Constants.PREFS_NAME, 0);
-      Log.w(Constants.TAG,"Parsed long: " + Long.parseLong("-2026936769"));
       init();
   }
   
@@ -48,9 +45,9 @@ public class AdminActivity extends Activity {
     setContentView(R.layout.main);
     
     // initialize user-entered fields
-    initText(R.id.user_id_text, Constants.MANAGE_USERID_PREF);
-    initText(R.id.sms_number_text, Constants.MANAGE_SMS_PREF);
-    initText(R.id.server_url_text, Constants.MANAGE_URL_PREF);
+    initText(R.id.user_id_text, Constants.MANAGE_USERID_PREF, "");
+    initText(R.id.sms_number_text, Constants.MANAGE_SMS_PREF, "");
+    initText(R.id.server_url_text, Constants.MANAGE_URL_PREF, Constants.DEFAULT_SERVER_DOMAIN);
     
     // create handler for SMS register button
     Button registerSmsButton = (Button) findViewById(R.id.register_phone_button_sms);
@@ -82,7 +79,7 @@ public class AdminActivity extends Activity {
         try{
           EditText urlField = (EditText) findViewById(R.id.server_url_text);
           Map<String,String> paramMap = createRegisterMap();
-          new HttpAdapter().doPost(urlField.getText().toString() + "/register", paramMap);
+          new HttpAdapter().doPost(urlField.getText().toString() + "/" + Constants.REGISTER_PATH, paramMap);
         } catch (IllegalArgumentException e) {
           Log.e(Constants.TAG,"Illegal argument in ODK Manage SMS Send");
         }
@@ -102,10 +99,12 @@ public class AdminActivity extends Activity {
     });
   }
   
-  private void initText(int field, String prefKey){
+  private void initText(int field, String prefKey, String defaultText){
     String initVal = settings.getString(prefKey, null);
-    if (initVal != null)
-      ((EditText) findViewById(field)).setText(initVal);
+    if (initVal == null)
+      initVal = defaultText;
+    
+    ((EditText) findViewById(field)).setText(initVal);
   }
   
   private Map<String,String> createRegisterMap(){

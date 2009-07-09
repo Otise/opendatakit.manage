@@ -15,6 +15,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 
@@ -87,14 +89,14 @@ public class FileHandler {
    * @return Pointer to the file downloaded, or null if unsuccessful
    */
   public File getFormFromUrl(URL u, File downloadDirectory) throws IOException{
-    String filename = u.getFile();
-    filename = filename.substring(filename.lastIndexOf('/') + 1);
-    if (filename.matches(SharedConstants.VALID_FILENAME)) {
-      Log.i(SharedConstants.TAG,"Downloading form: " + filename);
-      return getFileFromUrl(u, downloadDirectory);
+    Log.i(SharedConstants.TAG,"Downloading form: " + u);
+    File f =  getFileFromUrl(u, downloadDirectory);
+    if (f.getName().matches(SharedConstants.VALID_FILENAME)) {
+      return f;
     }
     else {
-      Log.i(SharedConstants.TAG,"Form name was not valid for download: " + filename);
+      Log.i(SharedConstants.TAG,"Form name was not valid for download: " + f.getName());
+      f.delete();
       return null;
     }
   }
@@ -109,8 +111,7 @@ public class FileHandler {
     c.setConnectTimeout(SharedConstants.CONNECTION_TIMEOUT);
     c.setReadTimeout(SharedConstants.CONNECTION_TIMEOUT);
     InputStream is = c.getInputStream();
-    
-    String filename = u.getFile();
+    String filename = getFilename(c);
     filename = filename.substring(filename.lastIndexOf('/') + 1);
     File f = new File(downloadDirectory + "/" + filename);
     
@@ -123,6 +124,31 @@ public class FileHandler {
     os.close();
     is.close();
     return f;
+  }
+  
+  //TODO(alerer): Make pattern handle filename defined in quotes
+  private static Pattern dispFilenamePattern = Pattern.compile("filename=([^ ]*)( .*)?$");
+  /**
+   * Gets the filename for a file downloaded from a URLConnection. First checks the 
+   * Content-disposition header for a filename; if one is not found, guesses based 
+   * on the URL.
+   * @param c
+   * @return
+   */
+  private String getFilename(URLConnection c){
+    String disposition = c.getHeaderField("Content-Disposition");
+    if (disposition != null) {
+      Matcher m = dispFilenamePattern.matcher(disposition);
+      if (m.find()){
+        return m.group(1);
+      }
+    }
+    try {
+      String url = c.getURL().toString();
+      return url.substring(url.lastIndexOf('/') + 1);
+    } catch (IndexOutOfBoundsException e) {
+      return "";
+    }
   }
 
 }

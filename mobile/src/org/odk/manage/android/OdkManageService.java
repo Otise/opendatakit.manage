@@ -25,7 +25,9 @@ import org.xml.sax.SAXException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +47,7 @@ public class OdkManageService extends Service{
   private SharedPreferences preferences;
   private DbAdapter dba;
   private PhonePropertiesAdapter propAdapter;
+  private String imei;
   
   // Lifecycle methods
   
@@ -56,6 +59,7 @@ public class OdkManageService extends Service{
 
   @Override
   public void onStart(Intent i, int startId){
+    //TODO(alerer): spawn a separate thread, or a worker, to perform these tasks
     MessageType mType = (MessageType) i.getExtras().get(MESSAGE_TYPE_KEY);
     Log.i(Constants.TAG, "OdkManageService started. Type: " + mType);
     NetworkInfo ni = getNetworkInfo();
@@ -103,6 +107,9 @@ public class OdkManageService extends Service{
   /////////////////////////
   
   private void init(){
+    propAdapter = new PhonePropertiesAdapter(this);
+    imei = propAdapter.getIMEI();
+    
     dba = new DbAdapter(this, Constants.DB_NAME);
     dba.open();
     
@@ -113,7 +120,7 @@ public class OdkManageService extends Service{
   }
   
   private void registerPhonePropertiesChangeListener() {
-    propAdapter = new PhonePropertiesAdapter(this);
+
     Intent mIntent = new Intent(this, OdkManageService.class);
     mIntent.putExtra(MESSAGE_TYPE_KEY, MessageType.PHONE_PROPERTIES_CHANGE);
     PendingIntent pi = PendingIntent.getService(this, 0, mIntent, 0);
@@ -143,7 +150,7 @@ public class OdkManageService extends Service{
   }
   
   private List<Task> getTasksFromTasklist(Document doc){
-    List<Task> tasks = new ArrayList<Task>();
+List<Task> tasks = new ArrayList<Task>();
     
     doc.getDocumentElement().normalize();
     
@@ -159,14 +166,7 @@ public class OdkManageService extends Service{
       NamedNodeMap taskAttributes = taskEl.getAttributes();
       
       // parsing ID
-      String idString = getAttribute(taskAttributes, "id");
-      long id;
-      try {
-        id = Long.parseLong(idString);
-      } catch (NumberFormatException e) {
-        Log.e(Constants.TAG, "ID not a number: " + idString);
-        continue;
-      }
+      String id = getAttribute(taskAttributes, "id");
       Log.i(Constants.TAG, "Id: " + id);
       
       // parsing type
@@ -203,8 +203,10 @@ public class OdkManageService extends Service{
 
     // remember that we have new tasks in case we can't retrieve them immediately
     String baseUrl = preferences.getString(Constants.MANAGE_URL_PREF, null);
-    if (baseUrl == null)
-      return;
+    if (baseUrl == null) {
+      Log.e(Constants.TAG, "Server URL preference is null. Using default.");
+      baseUrl = Constants.DEFAULT_SERVER_DOMAIN;
+    }
     
     // get the tasks input stream from the URL
     InputStream newTaskStream = null;
@@ -213,46 +215,53 @@ public class OdkManageService extends Service{
       String url = getTaskListUrl(baseUrl, imei);
       Log.i(Constants.TAG, "tasklist url: " + url);
       newTaskStream = new HttpAdapter().getUrl(url);
+
+      if (newTaskStream == null){
+        Log.e(Constants.TAG,"Null task stream");
+        return;
+      }
+      
+      Document doc = null;
+      try{
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        doc = db.parse(newTaskStream);
+      } catch (ParserConfigurationException e){
+        Log.e(Constants.TAG,"",e);
+      } catch (IOException e){
+        Log.e(Constants.TAG,"",e);
+      } catch (SAXException e){
+        Log.e(Constants.TAG,"",e);
+      }
+      if (doc == null)
+        return;
+      
+      List<Task> tasks = getTasksFromTasklist(doc);
+      
+      if (tasks == null){
+        Log.e(Constants.TAG, "Tasklist was null");
+        return;
+      }
+   
+      int added = 0;
+      for (Task t: tasks) {
+        if (dba.addTask(t) > -1) {
+          added++;
+        }
+      }
+      Log.d(Constants.TAG, added + " new tasks were added.");
     } catch (IOException e) {
       //TODO(alerer): do something here
-      Log.e(Constants.TAG, "IOException downloading tasklist");
-    }
-    if (newTaskStream == null){
-      Log.e(Constants.TAG,"Null task stream");
-      return;
-    }
-    
-    // produce a list of Task objects from the XML document
-    // Note: this is not very robust at the moment.
-    Document doc = null;
-    try{
-      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-      DocumentBuilder db = dbf.newDocumentBuilder();
-      doc = db.parse(newTaskStream);
-    } catch (ParserConfigurationException e){
-      Log.e(Constants.TAG,"",e);
-    } catch (IOException e){
-      Log.e(Constants.TAG,"",e);
-    } catch (SAXException e){
-      Log.e(Constants.TAG,"",e);
-    }
-    if (doc == null)
-      return;
-    
-    List<Task> tasks = getTasksFromTasklist(doc);
-    
-    // we obviously need some better strategy for handling the database
-    // because opening/closing are high-latency. Probably putting this all 
-    // in a service will fix the problem.
- 
-    int added = 0;
-    for (Task t: tasks) {
-      if (dba.addTask(t) > -1) {
-        added++;
+      Log.e(Constants.TAG, "IOException downloading tasklist", e);
+    } finally {
+      try {
+        if (newTaskStream != null) {
+          newTaskStream.close();
+        }
+      } catch (IOException e) {
+        Log.e(Constants.TAG, "IOException on closing new task stream", e);
       }
     }
-    Log.d(Constants.TAG, added + " tasks were added.");
-
   }
   
   private String getTaskListUrl(String baseUrl, String imei){
@@ -274,6 +283,41 @@ public class OdkManageService extends Service{
         dba.setTaskStatus(t, TaskStatus.SUCCESS);
       }
     }
+    sendStatusUpdates();
+  }
+  
+  /**
+   * Send a status update message to the ODK Manage server, listing any 
+   * tasks whose status has changed. These tasks are then marked as synced in 
+   * the local DB.
+   * 
+   * @return true if the message was sent successfully, or no message was required.
+   */
+  private boolean sendStatusUpdates(){
+    List<Task> tasks = dba.getUnsyncedTasks();
+    StatusUpdateXmlGenerator updateGen = new StatusUpdateXmlGenerator(imei);
+    for (Task t: tasks){
+      assert(!t.isStatusSynced());
+      updateGen.addTask(t);
+    }
+    Log.d(Constants.TAG, "Tasks with status updates: " + tasks.size());
+    if (tasks.size() == 0) {
+      return true;
+    }
+    String updateXml = updateGen.toString();
+    String manageUrl = preferences.getString(Constants.MANAGE_URL_PREF, null);
+    if (manageUrl == null) {
+      manageUrl = Constants.DEFAULT_SERVER_DOMAIN;
+    }
+    boolean success = 
+      new HttpAdapter().doPost(manageUrl + "/" + Constants.UPDATE_PATH, updateXml);
+    Log.i(Constants.TAG, "Status update message " + (success?"":"NOT ") + "successful");
+    if (success) {
+      for (Task t: tasks){
+        dba.setTaskStatusSynced(t, true);
+      }
+    }
+    return success;
   }
   
   private boolean attemptTask(Task t){

@@ -24,8 +24,7 @@
           android:text="@string/server_url"/>
   <EditText android:id="@+id/server_url_text" 
            android:layout_width="fill_parent" 
-           android:layout_height="wrap_content"
-           android:text="http://sms-api-test.appspot.com"/>
+           android:layout_height="wrap_content"/>
   <LinearLayout 
     android:orientation="horizontal"
     android:layout_width="fill_parent"

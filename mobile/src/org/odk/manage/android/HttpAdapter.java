@@ -7,6 +7,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
@@ -21,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+
+
 /**
  * This class provides a layer of indirection between ODK Manage activities / 
  * receivers and HTTP handling.
@@ -32,7 +35,7 @@ public class HttpAdapter {
 
   /**
    * Returns an input stream containing the body of the response for an HTTP 
-   * get request. 
+   * get request.
    * Synchronous.
    * @param url A string containing the URL to be fetched.
    * @return An {@link InputStream} containing the content of the response body.
@@ -40,13 +43,65 @@ public class HttpAdapter {
    */
   public InputStream getUrl(String url) throws IOException{
     URL u = new URL(url);
+    Log.d(Constants.TAG, "Opening connection to " + url);
     URLConnection c = u.openConnection();
     c.setConnectTimeout(SharedConstants.CONNECTION_TIMEOUT);
     c.setReadTimeout(SharedConstants.CONNECTION_TIMEOUT);
+    
     return c.getInputStream();
+    
+//    DefaultHttpClient httpclient = new DefaultHttpClient();
+//
+//    HttpGet myget = new HttpGet(url);
+//    HttpResponse response = null;
+//    try {
+//      response = httpclient.execute(myget);   
+//    } catch (ClientProtocolException e) {
+//      Log.e("OdkManage", "Protocol Exception Error", e);
+//      e.printStackTrace();
+//      return null;
+//    }
+//    
+//    if (response != null && response.getStatusLine().getStatusCode() == 200) {
+//      Log.d("httpPost", "response: " + response.getStatusLine());
+//      if (response.getEntity() != null) {
+//        response.getEntity().
+//        return response.getEntity().getContent();
+//      } else {
+//        return null;
+//      }
+//    } else {
+//      Log.e("OdkManage", "failure: " + response.getStatusLine());
+//      return null;
+//    }
   }
   
-  public void doPost(String url, Map<String,String> params){
+  private boolean doPost(HttpPost post) {
+    DefaultHttpClient httpclient = new DefaultHttpClient();
+
+    HttpResponse response = null;
+    try {
+      response = httpclient.execute(post);      
+    } catch (ClientProtocolException e) {
+      Log.e("OdkManage", "Protocol Exception Error", e);
+      e.printStackTrace();
+      return false;//break;
+    } catch (IOException e) {
+      Log.e("OdkManage", "IO Exception Error", e);
+      e.printStackTrace();
+      return false;//break;
+    }
+    if (response != null && response.getStatusLine().getStatusCode() == 200) {
+      Log.d("httpPost", "response: " + response.getStatusLine());
+      return true;
+    } else {
+      Log.e("OdkManage", "failure: " + response.getStatusLine());
+      return false;
+    }
+    //myViewUpdateHandler.sendEmptyMessage(0);
+  }
+  
+  public boolean doPost(String url, Map<String,String> params){
     
     List<NameValuePair> mFieldList = new ArrayList<NameValuePair>();
 
@@ -63,25 +118,26 @@ public class HttpAdapter {
       Log.e("OdkManage", "Unsupported Encoding");
       e.printStackTrace();
     }
-    HttpResponse response = null;
-    try {
-      response = httpclient.execute(mypost);      
-    } catch (ClientProtocolException e) {
-      Log.e("OdkManage", "Protocol Exception Error");
-      e.printStackTrace();
-    } catch (IOException e) {
-      Log.e("OdkManage", "IO Exception Error");
-      e.printStackTrace();
-      return;//break;
-    }
-    if (response != null && response.getStatusLine().getStatusCode() == 200) {
-      Log.d("httpPost", "response: " + response.getStatusLine());
-      return;
-    } else {
-      Log.e("OdkManage", "failure: " + response.getStatusLine());
-    }
-    //myViewUpdateHandler.sendEmptyMessage(0);
+    
+    return doPost(mypost);
   }
+  
+  public boolean doPost(String url, String body){
+    
+    HttpPost mypost = new HttpPost(url);
+
+    try {
+      mypost.setEntity(new StringEntity(body, HTTP.UTF_8));
+    } catch (UnsupportedEncodingException e) {
+      Log.e("OdkManage", "Unsupported Encoding");
+      e.printStackTrace();
+      return false;
+    }
+    
+    return doPost(mypost);
+  }
+  
+
 
 }
 
