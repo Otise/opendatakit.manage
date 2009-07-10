@@ -6,6 +6,7 @@ import org.odk.manage.server.Constants;
 import org.odk.manage.server.XmlUtils;
 import org.odk.manage.server.model.DbAdapter;
 import org.odk.manage.server.model.Device;
+import org.odk.manage.server.model.Task.TaskStatus;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -29,7 +30,14 @@ import javax.servlet.http.HttpServletResponse;
 public class ManageAdminServlet extends HttpServlet {
 
   private static final Logger log = Logger.getLogger(ManageAdminServlet.class.getName());
-
+  private static final String[] devicePropertyNames = new String[]{
+      "IMEI",
+      "User ID",
+      "Phone #",
+      "IMSI",
+      "SIM ID"
+  };
+  
   
   
   @Override
@@ -75,28 +83,41 @@ public class ManageAdminServlet extends HttpServlet {
       out.write("<input type='submit' value='Update URL' />");
       out.write("</form></div>");
       out.write("<table class='devices'>");
-      out.write("<tr><th>IMEI</th><th>User ID</th><th>Phone Number</th><th>IMSI</th><th>SIM Serial #</th><th>View Tasklist</th><th>Add/Update Form</th><th>Add/Update Package</th><th>Send Notification SMS</th></tr>");      
+      out.write("<tr><th>Device Properties</th><th>Tasklist</th><th>Add/Update Form</th><th>Add/Update Package</th><th>Send Notification SMS</th></tr>");      
       
       for (Device device : devices) {
         out.write("<tr class = 'device'>");
+
         String[] deviceProperties = new String[]{ 
-            device.getImei(), 
-            device.getUserId(), 
-            device.getPhoneNumber(), 
-            device.getImsi(), 
-            device.getSim() };
+          device.getImei(), 
+          device.getUserId(), 
+          device.getPhoneNumber(), 
+          device.getImsi(), 
+          device.getSim() };
         
-        for (String prop : deviceProperties){
-          out.write(getPropertyTd(prop));
-        }
+        assert (devicePropertyNames.length == deviceProperties.length);
+        
+        // Properties TD
         out.write("<td>");
+        for (int i = 0; i < devicePropertyNames.length; i++) {
+          out.write(printProperty(devicePropertyNames[i], deviceProperties[i]));
+        }
+        out.write("</td>");
+        
+        // Tasklist TD
+        out.write("<td>");
+        out.write(device.getTaskCount(TaskStatus.PENDING) + " pending tasks.<br/>");
+        out.write(device.getTaskCount(TaskStatus.SUCCESS) + " successful tasks.<br/>");
+        out.write(device.getTaskCount(TaskStatus.FAILED) + " failed tasks.<br/>");
         out.write("<a href='tasklist?imei=" + device.getImei() + "'>View Task List</a>");
         out.write("</td>");
         
+        // Add form TD
         out.write("<td>");
         out.write("<form action='addTask' method='post'>"); 
         out.write("<input type='hidden' name='imei' value='" + device.getImei() + "'/>");
         out.write("<input type='hidden' name='type' value='addForm'/>");
+        
         if (aggregateForms != null){
           out.write("<select name='aggregateFormSelect' onchange='checkForOther(this,\""+ device.getImei()+"\")'>");
           for (OdkAggregateForm form : aggregateForms) {
@@ -119,16 +140,19 @@ public class ManageAdminServlet extends HttpServlet {
         out.write("<input type='submit' value='Add Form'/>");
         out.write("</form>");
         out.write("</td>");
-        Logger l;
+        
+        // Install package TD
         out.write("<td>");
         out.write("<form action='addTask' method='post'>"); 
         out.write("<input type='hidden' name='imei' value='" + device.getImei() + "'/>");
         out.write("<input type='hidden' name='type' value='installPackage'/>");
+        out.write("Name: <input type='text' name='packageName'/><br>");
         out.write("Url: <input type='text' name='url'/><br>");
         out.write("<input type='submit' value='Install Package'/>");
         out.write("</form>");
         out.write("</td>");
         
+        // Send notification SMS TD
         out.write("<td>");
         out.write("<form action='sendSms' method='post'>");
         out.write("<input type='hidden' name='imei' value='" + device.getImei() + "'/>");
@@ -146,8 +170,12 @@ public class ManageAdminServlet extends HttpServlet {
     }
   }
   
-  private String getPropertyTd(String property){
-    return "<td class='property'>" + StringEscapeUtils.escapeHtml(removeNull(property)) + "</td>\n";
+//  private String getPropertyTd(String property){
+//    return "<td class='property'>" + StringEscapeUtils.escapeHtml(removeNull(property)) + "</td>\n";
+//  }
+  
+  private String printProperty(String propName, String property){
+    return "<strong>" + propName + ": </strong>" + property + "<br />";
   }
   
   private String removeNull(String s){

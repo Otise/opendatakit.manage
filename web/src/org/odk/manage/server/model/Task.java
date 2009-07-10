@@ -67,6 +67,8 @@ public class Task {
   private String extras;
   
   
+  
+  
   //right now, not sure how to deal with different types of tasks, since JDO
   //does not allow for polymorphism (?)...so just using this generic but not really 
   //typesafe approach for now

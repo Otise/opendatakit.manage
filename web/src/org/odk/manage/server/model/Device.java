@@ -16,7 +16,10 @@ package org.odk.manage.server.model;
 
 import com.google.appengine.api.datastore.Key;
 
+import org.odk.manage.server.model.Task.TaskStatus;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.jdo.annotations.IdentityType;
@@ -64,20 +67,62 @@ public class Device {
   @Persistent
   public Key group;
   
-  // this should eventually be pendingTasks and completedTasks?
+  // this is a hack because of JDO/GAE
   @Persistent
   private List<Task> tasks;
   
-  public List<Task> getTasks(){
-    if (this.tasks == null)
-      this.tasks = new ArrayList<Task>();
-    return tasks;
+  /**
+   * 
+   * @param status
+   * @return All tasks with the given status, or all tasks if status is null.
+   */
+  public List<Task> getTasks(TaskStatus status){
+    if (status == null) 
+      return Collections.unmodifiableList(tasks);
+    List<Task> res = new ArrayList<Task>();
+    for (Task t: tasks) {
+      if (t.getStatus().equals(status)){
+        res.add(t);
+      }
+    }
+    return res;
   }
   
+  public int getTaskCount(Task.TaskStatus status){
+    return getTasks(status).size();
+  }
+  
+//  private List<Task> getTasklistForStatus(TaskStatus status){
+//    if (status == null){
+//      List<Task> res = new ArrayList<Task>();
+//      res.addAll(pendingTasks);
+//      res.addAll(successTasks);
+//      res.addAll(failedTasks);
+//    }
+//    
+//    switch(status){
+//      case PENDING:
+//        if (pendingTasks == null)
+//          pendingTasks = new ArrayList<Task>();
+//        return pendingTasks;
+//      case SUCCESS:
+//        if (successTasks == null)
+//          successTasks = new ArrayList<Task>();
+//        return successTasks;
+//      case FAILED:
+//        if (failedTasks == null)
+//          failedTasks = new ArrayList<Task>();
+//        return failedTasks;
+//      default:
+//        throw new IllegalArgumentException();
+//    }
+//  }
+  
   public void addTask(Task t){
-    if (this.tasks == null)
-      this.tasks = new ArrayList<Task>();
-    this.tasks.add(t);
+    if (t == null || t.getType()==null || t.getStatus()==null){
+      throw new NullPointerException();
+    }
+    tasks.add(t);
   }
   
   private void checkInvariants(){

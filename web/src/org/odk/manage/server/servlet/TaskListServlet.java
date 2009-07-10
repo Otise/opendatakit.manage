@@ -7,6 +7,7 @@ import org.odk.manage.server.XmlUtils;
 import org.odk.manage.server.model.DbAdapter;
 import org.odk.manage.server.model.Device;
 import org.odk.manage.server.model.Task;
+import org.odk.manage.server.model.Task.TaskStatus;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -43,21 +44,21 @@ public class TaskListServlet extends HttpServlet {
       dba = new DbAdapter();
       Key k = KeyFactory.createKey(Device.class.getSimpleName(), "imei" + imei);
       Device device = dba.getDevice(imei);
-      List<Task> taskList = device.getTasks();
+      //TODO(alerer): I don't know how the datastore handles owned objects. If 
+      //it fetches them on-the-fly, we're in trouble (a datastore query for each task).
+      List<Task> taskList = device.getTasks(TaskStatus.PENDING);
       root.setAttribute("imei", req.getParameter("imei"));
-      debug("Tasks: " + device.getTasks());
-      debug("Tasks: " + device.getTasks());
       for (Task task: taskList){
-        Element e = doc.createElement("task");
-        e.setAttribute("type", task.getType().name());
-        e.setAttribute("id", task.getUniqueId());
-        if (task.getName() != null)
-          e.setAttribute("name", task.getName());
-        if (task.getUrl() != null)
-          e.setAttribute("url", task.getUrl());
-        if (task.getExtras() != null)
-          e.setAttribute("extras", task.getExtras());
-        root.appendChild(e);
+          Element e = doc.createElement("task");
+          e.setAttribute("type", task.getType().name());
+          e.setAttribute("id", task.getUniqueId());
+          if (task.getName() != null)
+            e.setAttribute("name", task.getName());
+          if (task.getUrl() != null)
+            e.setAttribute("url", task.getUrl());
+          if (task.getExtras() != null)
+            e.setAttribute("extras", task.getExtras());
+          root.appendChild(e);
       }
       XmlUtils.serialiseXml(doc, out);
     } finally {

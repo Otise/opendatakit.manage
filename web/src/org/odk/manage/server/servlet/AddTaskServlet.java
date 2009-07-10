@@ -71,13 +71,17 @@ public class AddTaskServlet extends HttpServlet {
           return;
         }
         task.setUrl(url);
+        String packageName = req.getParameter("packageName");
+        if (packageName != null && !packageName.equals("")){
+          task.setName(packageName);
+        }
+
       } else {
         debug("Unsupported task type");
         resp.getWriter().write("Error: Unsupported task type");
         return; //not a valid task type
       }
       
-      debug("Tasks: " + device.getTasks());
       debug("Task: " + task);
       
       device.addTask(task);
