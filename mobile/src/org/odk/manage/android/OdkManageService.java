@@ -64,33 +64,44 @@ public class OdkManageService extends Service{
     //TODO(alerer): spawn a separate thread, or a worker, to perform these tasks
     MessageType mType = (MessageType) i.getExtras().get(MESSAGE_TYPE_KEY);
     Log.i(Constants.TAG, "OdkManageService started. Type: " + mType);
-    NetworkInfo ni = getNetworkInfo();
+    boolean isConnected = isNetworkConnected();
     switch (mType) {
       case NEW_TASKS:
         setNewTasksPref(true);
         //TODO(alerer): use the CommunicationStategy
-        if (ni != null && NetworkInfo.State.CONNECTED.equals(ni.getState())) {
+        if (isConnected) {
           requestNewTasks();
           processPendingTasks();
+          sendStatusUpdates();
         }
         break; 
       case CONNECTIVITY_CHANGE:
         //TODO(alerer): use the CommunicationStategy
-        if (ni != null && NetworkInfo.State.CONNECTED.equals(ni.getState())) {
+        if (isConnected) {
           if (getNewTasksPref()){
             requestNewTasks();
           }
           processPendingTasks();
+          sendStatusUpdates();
         }
         break;
       case PHONE_PROPERTIES_CHANGE:
         Log.d(Constants.TAG, "Phone properties changed.");
         break;
       case PACKAGE_ADDED:
-        handlePackageAdded(i.getData());
+        handlePackageAdded(i.getExtras().getString("packageName"));
+        if (isConnected) {
+          sendStatusUpdates();
+        }
+        break;
       default:
         Log.w(Constants.TAG, "Unexpected MessageType in OdkManageService");
     }
+  }
+  
+  private boolean isNetworkConnected(){
+    NetworkInfo ni = getNetworkInfo();
+    return (ni != null && NetworkInfo.State.CONNECTED.equals(ni.getState()));
   }
   
   @Override 
@@ -123,13 +134,13 @@ public class OdkManageService extends Service{
     registerPhonePropertiesChangeListener();
   }
   
-  private void handlePackageAdded(Uri pkg){
-    String pkgName = pkg.toString();
-    Log.d(Constants.TAG, "Package added detected: " + pkgName);
+  private void handlePackageAdded(String packageName){
+    Log.d(Constants.TAG, "Package added detected: " + packageName);
     List<Task> pendingTasks = dba.getPendingTasks();
     for (Task t: pendingTasks) {
+      Log.d(Constants.TAG, "Type: " + t.getType() + "; Name: " + t.getName());
       if (t.getType().equals(TaskType.INSTALL_PACKAGE) && 
-          t.getExtras().equals(pkgName)){ // extras stores the package name
+          t.getName().equals(packageName)){ // extras stores the package name
         dba.setTaskStatus(t, TaskStatus.SUCCESS);
         Log.d(Constants.TAG, "Task " + t.getUniqueId() + " (INSTALL_PACKAGE) successful.");
         break;
@@ -292,10 +303,8 @@ List<Task> tasks = new ArrayList<Task>();
     for (Task t: tasks) {
       assert(t.getStatus().equals(TaskStatus.PENDING)); //just to check
       TaskStatus result = attemptTask(t);
-      Log.i(Constants.TAG, "Setting task status to " + result);
       dba.setTaskStatus(t, result);
     }
-    sendStatusUpdates();
   }
   
   /**
@@ -411,10 +420,10 @@ List<Task> tasks = new ArrayList<Task>();
           //doesn't guarantee that the task has actually been carried out.
           //We really should be installing the tasks automatically
           Log.i(Constants.TAG, "Installing package successfull.");
-          if (t.getExtras() == null) {
+          if (t.getName() == null) {
             return TaskStatus.SUCCESS; // since we don't know the package name, we have to just assume it worked.
           } else {
-            return TaskStatus.PENDING;
+            return TaskStatus.PENDING; // wait for a PACKAGE_ADDED intent for this package name
           }
         } catch (Exception e) {
           Log.e(Constants.TAG, 

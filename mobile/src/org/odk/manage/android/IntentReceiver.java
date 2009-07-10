@@ -1,5 +1,8 @@
 package org.odk.manage.android;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -38,17 +41,19 @@ public class IntentReceiver extends BroadcastReceiver {
                action.equals("android.net.wifi.WIFI_STATE_CHANGED")) {
       
       Log.d(Constants.TAG,"Connectivity change");
-      startOdkManageService(ctx, OdkManageService.MessageType.CONNECTIVITY_CHANGE);
+      startOdkManageService(ctx, OdkManageService.MessageType.CONNECTIVITY_CHANGE, null);
     } 
     // Boot completed
     else if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
       Log.d(Constants.TAG,"Boot completed");
-      startOdkManageService(ctx, OdkManageService.MessageType.BOOT_COMPLETED);
+      startOdkManageService(ctx, OdkManageService.MessageType.BOOT_COMPLETED, null);
     } 
     // Package added
     else if (action.equals(Intent.ACTION_PACKAGE_ADDED)) {
       Log.w(Constants.TAG, "Picked up package added: " + intent.getDataString() + "!");
-      
+      Map<String, String> extras = new HashMap<String, String>(1);
+      extras.put("packageName", intent.getData().getSchemeSpecificPart());
+      startOdkManageService(ctx, OdkManageService.MessageType.PACKAGE_ADDED, extras);
     } 
     // Unexpected intent
     else {
@@ -58,10 +63,15 @@ public class IntentReceiver extends BroadcastReceiver {
   }
   
   private void startOdkManageService(Context ctx, 
-      OdkManageService.MessageType messageType){
+      OdkManageService.MessageType messageType, Map<String, String> extras){
     
     Intent i = new Intent(ctx, OdkManageService.class);
     i.putExtra(OdkManageService.MESSAGE_TYPE_KEY, messageType);
+    if (extras != null) {
+      for (String key: extras.keySet()) {
+        i.putExtra(key, extras.get(key));
+      }
+    }
     ctx.startService(i);
   }
   

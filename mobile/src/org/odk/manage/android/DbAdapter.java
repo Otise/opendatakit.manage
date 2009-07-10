@@ -231,9 +231,11 @@ public class DbAdapter {
    * @param success The new status.
    */
   public void setTaskStatus(Task t, TaskStatus status) {
-    if (t.getStatus() != status) {
-      t.setStatusSynced(false);
+    if (status == null || t.getStatus().equals(status)) {
+      return;
     }
+    Log.d(Constants.TAG, "Setting status for task: " + status);
+    t.setStatusSynced(false);
     t.setStatus(status);
     ContentValues values = new ContentValues();
    
