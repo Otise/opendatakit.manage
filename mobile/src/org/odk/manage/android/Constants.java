@@ -41,10 +41,15 @@ public class Constants {
   public static final String PREF_USERID_KEY = "userid";
   
   /**
+   * Pref key for whether a registration is currently in progress.
+   */
+  public static final String PREFS_REG_IN_PROGRESS_KEY = "reg_in_progress";
+  
+  /**
    * Pref key. Pref is true if ODK Manage believes that the tasklist should 
    * be polled for new tasks (e.g. if a new tasks notification SMS is received).
    */
-  public static final String NEW_TASKS_PREF = "newTasks";
+  public static final String PREF_NEW_TASKS_KEY = "newTasks";
   
   /**
    * The local path where downloaded packages should be temporarily stored 
@@ -84,5 +89,7 @@ public class Constants {
    * Name of the local database.
    */
   public static final String DB_NAME = "odk_manage_db";
+
+
   
 }

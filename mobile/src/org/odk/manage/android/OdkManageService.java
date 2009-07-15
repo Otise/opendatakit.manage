@@ -66,15 +66,15 @@ public class OdkManageService extends Service{
     //TODO(alerer): spawn a separate thread, or a worker, to perform these tasks
     MessageType mType = (MessageType) i.getExtras().get(MESSAGE_TYPE_KEY);
     Log.i(Constants.TAG, "OdkManageService started. Type: " + mType);
-    if (!isImsiRegistered()){
-      registerDevice(CommunicationProtocol.SMS);
-    }
     
+    syncDeviceImeiRegistration();
+    
+    //TODO(alerer): use the CommunicationStategy
     boolean isConnected = isNetworkConnected();
     switch (mType) {
       case NEW_TASKS:
         setNewTasksPref(true);
-        //TODO(alerer): use the CommunicationStategy
+        
         if (isConnected) {
           requestNewTasks();
           processPendingTasks();
@@ -82,7 +82,6 @@ public class OdkManageService extends Service{
         }
         break; 
       case CONNECTIVITY_CHANGE:
-        //TODO(alerer): use the CommunicationStategy
         if (isConnected) {
           if (getNewTasksPref()){
             requestNewTasks();
@@ -140,22 +139,13 @@ public class OdkManageService extends Service{
     registerPhonePropertiesChangeListener();
   }
   
-  /**
-   * 
-   * @return true if the IMSI is registered with the server, or the IMSI is 
-   * null (i.e. doesn't need registration)
-   */
-  private boolean isImsiRegistered(){
-    // do we actually want SIM serial number?
-    String registeredImsi = prefsAdapter.getString(Constants.PREF_REGISTERED_IMSI_KEY, null);
-    String newImsi = propAdapter.getIMSI();
-    //if the IMSI exists and has changed, then we want to send a registration
-    return (newImsi == null || newImsi.equals(registeredImsi));
-  }
-  
-  private void registerDevice(CommunicationProtocol channel){
-    Log.i(Constants.TAG, "IMSI changed: Registering device");
-    new DeviceRegistrationHandler(this).register(channel);
+  private void syncDeviceImeiRegistration(){
+    
+    DeviceRegistrationHandler drh = new DeviceRegistrationHandler(this);
+    if (drh.registrationNeededForImei()){
+      Log.i(Constants.TAG, "IMSI changed: Registering device");
+      drh.register(CommunicationProtocol.SMS);
+    }
   }
   
   
@@ -468,11 +458,11 @@ List<Task> tasks = new ArrayList<Task>();
   }
   
   private boolean getNewTasksPref(){
-    return prefsAdapter.getPreferences().getBoolean(Constants.NEW_TASKS_PREF, false);
+    return prefsAdapter.getPreferences().getBoolean(Constants.PREF_NEW_TASKS_KEY, false);
   }
   private void setNewTasksPref(boolean newValue){
     SharedPreferences.Editor editor = prefsAdapter.getPreferences().edit();
-    editor.putBoolean(Constants.NEW_TASKS_PREF, newValue);
+    editor.putBoolean(Constants.PREF_NEW_TASKS_KEY, newValue);
     editor.commit();
   }
 

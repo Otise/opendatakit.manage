@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * An adapter for Android preferences. Right now, it only handles string 
+ * An adapter for Android preferences. Right now, it only handles string/boolean
  * preferences, so you have to call getPreferences and act on the Preferences 
  * directly for other preference types (unfortunately).
  * @author alerer@google.com (Adam Lerer)
@@ -19,7 +19,7 @@ public class SharedPreferencesAdapter {
   static {
     prefDefaults = new HashMap<String, String>();
     prefDefaults.put(Constants.PREF_URL_KEY, Constants.PREF_URL_DEFAULT);
-    prefDefaults.put(Constants.PREF_SMS_KEY, Constants.PREF_SMS_DEFAULT_SHORT);
+    prefDefaults.put(Constants.PREF_SMS_KEY, Constants.PREF_SMS_DEFAULT_LONG);
   }
   
   private SharedPreferences prefs;
@@ -51,6 +51,14 @@ public class SharedPreferencesAdapter {
     for (String key: keyvals.keySet()) {
       editor.putString(key, keyvals.get(key));
     }
+    return editor.commit();
+  }
+  public boolean getBoolean(String key, boolean defValue){
+    return prefs.getBoolean(key, defValue);
+  }
+  public boolean setPreference(String key, boolean value){
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean(key, value);
     return editor.commit();
   }
   
