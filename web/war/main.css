@@ -66,3 +66,12 @@ table.devices td {
 [status=red] {
   background-color: #FFAAAA
 }
+div.messageDiv {
+  margin: 0px 10px;
+}
+div.messageDiv[messageType=error] {
+  color: red;
+}
+div.messageDiv[messageType=success] {
+  color: green;
+}

@@ -1,5 +1,6 @@
 package org.odk.manage.server.servlet;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.odk.manage.server.AdminAccountsConfig;
 import org.odk.manage.server.SmsSender;
 import org.odk.manage.server.model.DbAdapter;
@@ -9,6 +10,7 @@ import org.odk.manage.server.model.Task.TaskStatus;
 import org.odk.manage.server.model.Task.TaskType;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,7 +25,7 @@ public class DoActionServlet extends HttpServlet {
   
   @Override
   public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
+    
     // authenticate the user as an admin
     if (!AdminAccountsConfig.authenticateAdmin(req, resp)) {
       return;
@@ -48,15 +50,25 @@ public class DoActionServlet extends HttpServlet {
     String url = req.getParameter(type + ".url");
     String extras = req.getParameter(type + ".extras");
     
+    //TODO(alerer): this is ugly - we should use javascript to turn this into 
+    //name/url fields on the client side :)
     String aggregateSel = req.getParameter("aggregateFormSelect");
-    if (aggregateSel != null && !aggregateSel.equals("") && !aggregateSel.equals("other")){
+    if (type.equals("ADD_FORM") && 
+        aggregateSel != null && 
+        !aggregateSel.equals("") && 
+        !aggregateSel.equals("other")){
       String[] nameAndUrl = aggregateSel.split("\"");
-      assert(nameAndUrl.length == 2);
       name = nameAndUrl[0];
       url = nameAndUrl[1];
     }
     
-    
+    /**
+     * TODO(alerer): this section should eventually be refactored - there are some parts 
+     * that are common between action types (e.g. iterating over IMEIs), but 
+     * other parts are different (e.g. counting successes). There are nice ways 
+     * to do this, but not worth the complexity at the moment.
+     */
+    int numSuccess = 0;
     try { 
       dba = new DbAdapter();
       for (String imei: imeis) {
@@ -72,18 +84,33 @@ public class DoActionServlet extends HttpServlet {
         
         if (tasktype != null) {
           addTask(device, tasktype, TaskStatus.PENDING, name, url, extras);
+          numSuccess++;
         } else if (type.equals("NEW_TASKS_SMS")) {
-          new SmsSender().sendNewTaskNotification(device);
+          if (new SmsSender().sendNewTaskNotification(device)) {
+            numSuccess++;
+          }
         } else {
-          debug("Error: Invalid Task Type");
-          resp.sendError(400);
+          redirectMain(resp, "Unrecognized action.", false);
+          return;
         }
       }
-       
+      
     } finally {
       dba.close();
       dba = null;
     }
+    if (tasktype != null) {
+      redirectMain(resp, "Added task (" + type + ") to " + imeis.length + " devices.", true);
+    } else if (type.equals("NEW_TASK_SMS")) {
+      redirectMain(resp, "New tasks SMS notifications were sent to " + numSuccess + 
+          " out of " + imeis.length + " devices.", numSuccess > 0 || imeis.length == 0);
+    }
+  }
+  
+  private void redirectMain(HttpServletResponse resp, String message, boolean success)
+   throws IOException {
+    resp.sendRedirect("admin.html?messageType=" + (success?"success":"error") + 
+        "&message=" + URLEncoder.encode(message, "UTF-8"));
   }
   
   private void addTask(Device device, TaskType type, TaskStatus status, 

@@ -82,6 +82,13 @@ public class ManageAdminServlet extends HttpServlet {
           "' value='" + StringEscapeUtils.escapeHtml(removeNull(aggregateDomain)) + "'/>");
       out.write("<input type='submit' value='Update URL' />");
       out.write("</form></div>");
+      String actionMessage = req.getParameter("message");
+      String actionMessageType = req.getParameter("messageType");
+      if (actionMessage != null && actionMessageType != null){
+        out.write("<div class='messageDiv' messageType='" + 
+            StringEscapeUtils.escapeHtml(actionMessageType) + "'>" + 
+            StringEscapeUtils.escapeHtml(actionMessage) + "</div>");
+      }
       out.write("<div id='mainPanel'>");
       
       out.write("<div id='actionForm'>");
