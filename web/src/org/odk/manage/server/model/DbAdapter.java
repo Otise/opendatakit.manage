@@ -5,6 +5,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 
 import org.odk.manage.server.model.Task.TaskStatus;
 
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,8 +68,9 @@ public class DbAdapter {
     newDevice.setSim(sim);
     newDevice.setUserId(userId);
     newDevice.setNumberWithValidator(numberWithValidator);
+    newDevice.setLastContacted(new Date());
     
-    // we want to update oldDevice if it exists, 
+    // XXX(alerer): we want to update oldDevice if it exists, 
     //but app engine is not cooperating
     // so we're doing a workaround
     Device oldDevice = getDevice(imei);

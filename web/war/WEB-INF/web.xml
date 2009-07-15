@@ -80,5 +80,15 @@
     <servlet-name>deviceUpdateServlet</servlet-name>
     <url-pattern>/update</url-pattern>
   </servlet-mapping>
+  
+    <servlet>
+    <servlet-name>doActionServlet</servlet-name>
+    <servlet-class>org.odk.manage.server.servlet.DoActionServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>doActionServlet</servlet-name>
+    <url-pattern>/doAction</url-pattern>
+  </servlet-mapping>
 
 </web-app>

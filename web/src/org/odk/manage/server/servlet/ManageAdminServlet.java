@@ -19,6 +19,7 @@ import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,10 +35,15 @@ public class ManageAdminServlet extends HttpServlet {
       "IMEI",
       "User ID",
       "Phone #",
-      "IMSI",
-      "SIM ID"
+      //"IMSI",
+      //"SIM ID"
   };
-  
+  private static String devicePropertyThs = "";
+  static {
+    for (String name : devicePropertyNames) {
+      devicePropertyThs = devicePropertyThs + "<th>" + name + "</th>";
+    }
+  }
   
   
   @Override
@@ -65,104 +71,124 @@ public class ManageAdminServlet extends HttpServlet {
       Writer out = resp.getWriter();
       out.write("<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Transitional//EN'" +
               "'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'>\n");
-      out.write("<html>\n<head>\n<title>ODK Manage Server</title><link href='main.css' type='text/css' rel='stylesheet'></link>");
-      out.write("<script> function checkForOther(obj,imei) { " +
-                "var txt = document.getElementById('otherUrl'+imei); " +
-                "if (obj.value == 'other') { " +
-                  "txt.style.display = 'block';" + 
-                "} else { " +
-                  "txt.style.display = 'none';" + 
-                "}" +
-              "}");
-      out.write("</script></head>");
-      out.write("<body><h1>ODK Manage Server</h1>"); 
+      out.write("<html><head><title>ODK Manage Server</title>");
+      out.write("<link href='main.css' type='text/css' rel='stylesheet'></link>");
+      out.write("<script src='admin.js' type='text/javascript'></script>");
+      out.write("</head>");
+      out.write("<body onload='updateActionType();updateAggregateFormSelect()'><h1>ODK Manage Server</h1>"); 
       
-      out.write("<div style='margin:10px'><form action='admin.html' method='post'>");
+      out.write("<div align='right' id='aggregateUrlDiv'><form action='admin.html' method='post'>");
       out.write("ODK Aggregate URL: <input type='text' name='" + Constants.AGGREGATE_DOMAIN_KEY + 
           "' value='" + StringEscapeUtils.escapeHtml(removeNull(aggregateDomain)) + "'/>");
       out.write("<input type='submit' value='Update URL' />");
       out.write("</form></div>");
-      out.write("<table class='devices'>");
-      out.write("<tr><th>Device Properties</th><th>Tasklist</th><th>Add/Update Form</th><th>Add/Update Package</th><th>Send Notification SMS</th></tr>");      
+      out.write("<div id='mainPanel'>");
       
+      out.write("<div id='actionForm'>");
+      out.write("<form action='doAction' method='post'>");
+      out.write("Perform Action: ");
+      out.write("<select name='actionType' id='actionTypeSel' onchange='updateActionType()'>");
+      out.write("<option value='' selected='true'></option>");
+      out.write("<option value='ADD_FORM'>Add Form</option>");
+      out.write("<option value='INSTALL_PACKAGE'>Install Package</option>");
+      out.write("<option value='NEW_TASKS_SMS'>Send New Tasks SMS</option>");
+      out.write("</select>");
+      out.write("<br/>");
+      
+      out.write("<div class='actionInputs' id='ADD_FORM_INPUTS'>");
+      if (aggregateForms != null){
+        out.write("Choose a form: ");
+        out.write("<select id='aggregateFormSelect' name='aggregateFormSelect' onchange='updateAggregateFormSelect()'>");
+        for (OdkAggregateForm form : aggregateForms) {
+          // I'm using the " symbol as a delimiter to separate the form name
+          // from the form URL. Using this symbol prevents me from having to 
+          // do additional escaping because HtmlEscape escapes the " symbol 
+          // even though I'm using ' quotes.
+          out.write("<option value='" + StringEscapeUtils.escapeHtml(form.name) + 
+              "\"" + StringEscapeUtils.escapeHtml(form.url) + "'>" + 
+              StringEscapeUtils.escapeHtml(form.name) + "</option>");
+        }
+        out.write("<option value='other'>Other...</option>");
+        out.write("</select>");
+        out.write("<div id='otherUrl'>" +
+              "Form URL: <input name='ADD_FORM.url' type='text'></div>");
+
+      } else {
+        out.write("Form URL: <input type='text' name='ADD_FORM.url'/><br>");
+      }
+      out.write("</div>");
+      
+      out.write("<div class='actionInputs' id='INSTALL_PACKAGE_INPUTS'>");
+      out.write("<table><tr><td>Package Name: </td><td><input type='text' name='INSTALL_PACKAGE.name' value='org.odk.collect.android'/></td>");
+      out.write("<tr><td>Package URL: </td><td><input type='text' name='INSTALL_PACKAGE.url'/></td></table>");
+      out.write("</div>");
+      out.write("<div class='actionInputs'id='NEW_TASKS_SMS_INPUTS'></div>");
+      
+      out.write("<input id='actionSubmit' type='submit' value='Submit'/>");
+      out.write("</div>");
+      
+      out.write("<table class='devices'>");
+      out.write("<tr><th><input type='checkbox' id='selectAllCheckbox' onclick='updateSelectAll()'</th>");
+      out.write(devicePropertyThs + "<th colspan=3>Tasks</th><th>Tasklist</th><th>SMS<th>Last Contacted</th></tr>");      
+      
+      Date now = new Date();
       for (Device device : devices) {
-        out.write("<tr class = 'device'>");
+        int numPending = device.getTaskCount(TaskStatus.PENDING);
+        int numSuccess = device.getTaskCount(TaskStatus.SUCCESS);
+        int numFailed = device.getTaskCount(TaskStatus.FAILED);
+        String status = (numFailed > 0) ? "red" : (numPending > 0) ? "yellow" : "";
+        out.write("<tr class = 'device' status=" + status + ">");
 
         String[] deviceProperties = new String[]{ 
           device.getImei(), 
           device.getUserId(), 
           device.getPhoneNumber(), 
-          device.getImsi(), 
-          device.getSim() };
+          //device.getImsi(), 
+          //device.getSim() 
+          };
         
         assert (devicePropertyNames.length == deviceProperties.length);
         
+        // Checkbox TD
+        out.write("<td><input type='checkbox' name='imei' value='" + device.getImei() + "' onclick='updateSelectedDevice()'/></td>");
         // Properties TD
-        out.write("<td>");
-        for (int i = 0; i < devicePropertyNames.length; i++) {
-          out.write(printProperty(devicePropertyNames[i], deviceProperties[i]));
+        for (String property : deviceProperties) {
+          out.write(getPropertyTd(property));
         }
-        out.write("</td>");
-        
+
         // Tasklist TD
+        
+        out.write("<td status=yellow>" + (numPending>0?numPending:" ") + "</td>");
+        out.write("<td status=green>" + (numSuccess>0?numSuccess:" ") + "</td>");
+        out.write("<td status=red>" + (numFailed>0?numFailed:" ") + "</td>");
         out.write("<td>");
-        out.write(device.getTaskCount(TaskStatus.PENDING) + " pending tasks.<br/>");
-        out.write(device.getTaskCount(TaskStatus.SUCCESS) + " successful tasks.<br/>");
-        out.write(device.getTaskCount(TaskStatus.FAILED) + " failed tasks.<br/>");
         out.write("<a href='tasklist?imei=" + device.getImei() + "'>View Task List</a>");
         out.write("</td>");
         
-        // Add form TD
-        out.write("<td>");
-        out.write("<form action='addTask' method='post'>"); 
-        out.write("<input type='hidden' name='imei' value='" + device.getImei() + "'/>");
-        out.write("<input type='hidden' name='type' value='addForm'/>");
-        
-        if (aggregateForms != null){
-          out.write("<select name='aggregateFormSelect' onchange='checkForOther(this,\""+ device.getImei()+"\")'>");
-          for (OdkAggregateForm form : aggregateForms) {
-            // I'm using the " symbol as a delimiter to separate the form name
-            // from the form URL. Using this symbol prevents me from having to 
-            // do additional escaping because HtmlEscape escapes the " symbol 
-            // even though I'm using ' quotes.
-            out.write("<option value='" + StringEscapeUtils.escapeHtml(form.name) + 
-                "\"" + StringEscapeUtils.escapeHtml(form.url) + "'>" + 
-                StringEscapeUtils.escapeHtml(form.name) + "</option>");
-          }
-          out.write("<option value='other'>Other...</option>");
-          out.write("</select>");
-          out.write("<div id='otherUrl"+device.getImei()+"' style='display:none'>" +
-          		"Url: <input  name='url' type='text'></div>");
-
-        } else {
-          out.write("Url: <input type='text' name='url'/><br>");
-        }
-        out.write("<input type='submit' value='Add Form'/>");
-        out.write("</form>");
-        out.write("</td>");
-        
-        // Install package TD
-        out.write("<td>");
-        out.write("<form action='addTask' method='post'>"); 
-        out.write("<input type='hidden' name='imei' value='" + device.getImei() + "'/>");
-        out.write("<input type='hidden' name='type' value='installPackage'/>");
-        out.write("Name: <input type='text' name='packageName'/><br>");
-        out.write("Url: <input type='text' name='url'/><br>");
-        out.write("<input type='submit' value='Install Package'/>");
-        out.write("</form>");
-        out.write("</td>");
-        
         // Send notification SMS TD
+        if (device.getNumberWithValidator()!=null) {
+          out.write("<td status=green>Yes</td>");
+        } else {
+          out.write("<td></td>");
+        }
+        
+        //Last contacted TD
         out.write("<td>");
-        out.write("<form action='sendSms' method='post'>");
-        out.write("<input type='hidden' name='imei' value='" + device.getImei() + "'/>");
-        out.write("<input type='submit' value='Send notification SMS'" + (device.getNumberWithValidator()==null?"disabled='true'":"") + ">");
-        out.write("</form>");
+        if (device.getLastContacted() != null) {
+          long ms = now.getTime() - device.getLastContacted().getTime();
+          out.write(getDurationString(ms) + " ago.");
+        }
         out.write("</td>");
         out.write("</tr>");
         
       }
-      out.write("</table></body></html>");
+      out.write("</table>");
+      /**
+       * Note that the action form INCLUDES the entire devices table - this way,
+       * we know which devices are highlighted.
+       */
+      out.write("</form>");
+      out.write("</div></body></html>");
 
     } finally {
       if (dba != null)
@@ -170,12 +196,19 @@ public class ManageAdminServlet extends HttpServlet {
     }
   }
   
-//  private String getPropertyTd(String property){
-//    return "<td class='property'>" + StringEscapeUtils.escapeHtml(removeNull(property)) + "</td>\n";
-//  }
+  private String getDurationString(long ms){
+    long mins = ms / 60000;
+    long hrs = mins / 60;
+    long days = hrs / 24;
+    if (days != 0)
+      return days + " days";
+    if (hrs != 0)
+      return hrs + " hours";
+    return mins + " minutes";
+  }
   
-  private String printProperty(String propName, String property){
-    return "<strong>" + propName + ": </strong>" + property + "<br />";
+  private String getPropertyTd(String property){
+    return "<td class='property'>" + StringEscapeUtils.escapeHtml(removeNull(property)) + "</td>\n";
   }
   
   private String removeNull(String s){

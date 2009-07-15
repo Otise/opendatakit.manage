@@ -1,7 +1,11 @@
 package org.odk.manage.server.servlet;
 
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
+
 import org.odk.manage.server.XmlUtils;
 import org.odk.manage.server.model.DbAdapter;
+import org.odk.manage.server.model.Device;
 import org.odk.manage.server.model.Task;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -9,6 +13,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,31 +39,36 @@ public class DeviceUpdateServlet extends HttpServlet {
       resp.sendError(400);
       return;
     }
-    
-    //TODO(alerer): do we want to verify the right IMEI? Not really necessary.
-    //If they are not all in the same IMEI, not same entity group, error...
-    
-    NodeList taskNodes = doc.getElementsByTagName("task");
-    
-    for (int i = 0; i < taskNodes.getLength(); i++) {
-      if (!(taskNodes.item(i) instanceof Element)) {
-        continue;
-      }
-      Element taskEl = (Element) taskNodes.item(i);
-
-      NamedNodeMap taskAttributes = taskEl.getAttributes();
-      
-      String id = XmlUtils.getAttribute(taskAttributes, "id");
-      Task.TaskStatus status = Task.TaskStatus.valueOf(
-          XmlUtils.getAttribute(taskAttributes, "status"));
-      
-      DbAdapter dba = null;
+    DbAdapter dba = null;
+    try {
+      dba = new DbAdapter();
+      // we make a best effort to update 'last contacted'
+      // this should be done more cleanly
       try {
-        dba = new DbAdapter();
-        dba.updateTaskStatus(id, status);
-      } finally {
-        dba.close();
+        String imei = ((Element) doc.getElementsByTagName("tasks").item(0)).getAttribute("imei");
+        Device device = dba.getDevice(imei);
+        device.setLastContacted(new Date());
+      } catch (Exception e) {}
+      
+      NodeList taskNodes = doc.getElementsByTagName("task");
+      
+      for (int i = 0; i < taskNodes.getLength(); i++) {
+        if (!(taskNodes.item(i) instanceof Element)) {
+          continue;
+        }
+        Element taskEl = (Element) taskNodes.item(i);
+  
+        NamedNodeMap taskAttributes = taskEl.getAttributes();
+        
+        String id = XmlUtils.getAttribute(taskAttributes, "id");
+        Task.TaskStatus status = Task.TaskStatus.valueOf(
+            XmlUtils.getAttribute(taskAttributes, "status"));
+        
+  
+          dba.updateTaskStatus(id, status);
       }
+    } finally {
+      dba.close();
     }
   }
   

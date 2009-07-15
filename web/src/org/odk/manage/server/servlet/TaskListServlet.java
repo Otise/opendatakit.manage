@@ -13,6 +13,7 @@ import org.w3c.dom.Element;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,8 +43,11 @@ public class TaskListServlet extends HttpServlet {
     DbAdapter dba = null;
     try {
       dba = new DbAdapter();
-      Key k = KeyFactory.createKey(Device.class.getSimpleName(), "imei" + imei);
       Device device = dba.getDevice(imei);
+      // the device has made contact
+      String isDevice = req.getParameter("isDevice");
+      if (isDevice != null && isDevice.equals("true"))
+        device.setLastContacted(new Date());
       //TODO(alerer): I don't know how the datastore handles owned objects. If 
       //it fetches them on-the-fly, we're in trouble (a datastore query for each task).
       List<Task> taskList = device.getTasks(TaskStatus.PENDING);

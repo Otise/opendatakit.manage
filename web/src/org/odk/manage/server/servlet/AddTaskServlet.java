@@ -42,46 +42,36 @@ public class AddTaskServlet extends HttpServlet {
         resp.getWriter().write("Error: Device does not exist.");
         return;
       }
+      
       String type = req.getParameter("type");
-      Task task = null;
-      if ("addForm".equals(type)){
-        debug("Added ADD_FORM task");
-        task = new Task(TaskType.ADD_FORM);
-        String aggregateSel = req.getParameter("aggregateFormSelect");
-        //special case for the link with aggregate
-        if (aggregateSel != null && !aggregateSel.equals("") && !aggregateSel.equals("other")){
-          String[] nameAndUrl = aggregateSel.split("\"");
-          assert(nameAndUrl.length == 2);
-          task.setName(nameAndUrl[0]);
-          task.setUrl(nameAndUrl[1]);
-        } else {
-          String url = req.getParameter("url");
-          if (url == null || url.equals("")) {
-            resp.getWriter().write("Task URL not specified.");
-            return;
-          }
-          task.setUrl(url);
-        }
-      } else if ("installPackage".equals(type)){
-        debug("Added INSTALL_PACKAGE task");
-        task = new Task(TaskType.INSTALL_PACKAGE);
-        String url = req.getParameter("url");
-        if (url == null || url.equals("")) {
-          resp.getWriter().write("Task URL not specified.");
-          return;
-        }
-        task.setUrl(url);
-        String packageName = req.getParameter("packageName");
-        if (packageName != null && !packageName.equals("")){
-          task.setName(packageName);
-        }
-
-      } else {
+      String name = req.getParameter("name");
+      String url = req.getParameter("url");
+      String extras = req.getParameter("extras");
+      if (type == null) {
+        debug("No task type");
+        resp.getWriter().write("Error: No task type");
+        return; //not a valid task type
+      }
+      TaskType ttype = TaskType.valueOf(type);
+      if (ttype == null) {
         debug("Unsupported task type");
         resp.getWriter().write("Error: Unsupported task type");
         return; //not a valid task type
       }
+      Task task = new Task(ttype);
+      task.setName(name);
+      task.setUrl(url);
+      task.setExtras(extras);
+
+      //special case for ODK Aggregate integration
+      String aggregateSel = req.getParameter("aggregateFormSelect");
       
+      if (aggregateSel != null && !aggregateSel.equals("") && !aggregateSel.equals("other")){
+        String[] nameAndUrl = aggregateSel.split("\"");
+        assert(nameAndUrl.length == 2);
+        task.setName(nameAndUrl[0]);
+        task.setUrl(nameAndUrl[1]);
+      } 
       debug("Task: " + task);
       
       device.addTask(task);

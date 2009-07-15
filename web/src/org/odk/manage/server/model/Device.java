@@ -20,6 +20,7 @@ import org.odk.manage.server.model.Task.TaskStatus;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import javax.jdo.annotations.IdentityType;
@@ -61,7 +62,19 @@ public class Device {
   private String numberWithValidator;
   
   @Persistent
+  private Date lastContacted;
+  
+  /**
+   * userId can be set by the client or server.
+   */
+  @Persistent
   private String userId;
+  
+  /**
+   * Comments are set by the admin on the server side.
+   */
+  @Persistent
+  private String comments;
   
   //type DeviceGroup 
   @Persistent
@@ -79,6 +92,13 @@ public class Device {
   public List<Task> getTasks(TaskStatus status){
     if (status == null) 
       return Collections.unmodifiableList(tasks);
+    
+//    Query query = PMF.get().getPersistenceManager().newQuery(Task.class, tasks);
+//    query.setFilter("status == statusParam");
+//    query.declareParameters("String statusParam");
+//    return Collections.unmodifiableList(
+//        (List<Task>) query.execute(status.name()));
+    
     List<Task> res = new ArrayList<Task>();
     for (Task t: tasks) {
       if (t.getStatus().equals(status)){
@@ -176,6 +196,22 @@ public class Device {
 
   public String getUserId() {
     return userId;
+  }
+
+  public void setComments(String comments) {
+    this.comments = comments;
+  }
+
+  public String getComments() {
+    return comments;
+  }
+
+  public void setLastContacted(Date lastContacted) {
+    this.lastContacted = lastContacted;
+  }
+
+  public Date getLastContacted() {
+    return lastContacted;
   }
  
 }

@@ -6,24 +6,63 @@ h1 {
   font-size: 2em;
   font-weight: bold;
   color: #777777;
-  margin: 40px 0px 70px;
+  margin: 40px 10px 20px 10px;
   text-align: center;
 }
 
-table {
-  border-width: 1px 1px 1px 1px;
+div#aggregateUrlDiv {
+  margin: 0px 10px;
+}
+
+div#mainPanel {
+  margin: 40px 10px 20px;
+}
+
+div#actionForm {
+  display: block;
+  border: 1px solid black;
+  padding: 10px;
+  margin:  20px 0px;
+  width: 600px;
+  background: #F5F5F5;
+}
+
+div.actionInputs {
+  margin: 10px 0px;
+}
+
+div.actionInputs input {
+  width: 20em;
+}
+
+input#actionSubmit {
+  margin: 0px 0px; 
+}
+
+table.devices {
+  border-width: 1px;
   border-spacing: 2px;
-  border-style: outset outset outset outset;
+  border-style: outset;
   border-collapse: collapse;
 }
-table th {
-  border-width: 1px 1px 1px 1px;
-  padding: 3px 3px 3px 3px;
-  border-style: inset inset inset inset;
+table.devices th {
+  border-width: 1px;
+  padding: 5px;
+  border-style: inset;
   background-color: #EEEEEE;
 }
-table td {
-  border-width: 1px 1px 1px 1px;
-  padding: 3px 3px 3px 3px;
-  border-style: inset inset inset inset;
+table.devices td {
+  border-width: 1px;
+  padding: 5px;
+  border-style: inset;
+}
+
+[status=green] {
+  background-color: #BBFFBB
+}
+[status=yellow] {
+  background-color: #FFFFAA
+}
+[status=red] {
+  background-color: #FFAAAA
 }
