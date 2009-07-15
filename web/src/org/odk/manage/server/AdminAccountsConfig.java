@@ -15,6 +15,7 @@ public class AdminAccountsConfig {
   private static final String[] adminAccounts = 
     new String[]{"adam.lerer@gmail.com",
                  "brunette.appengine@gmail.com",
+                 "borriellog@gmail.com",
                  "yanokwa@google.com",
                  "carlhartung@google.com",
                  // add authorized admin emails here
