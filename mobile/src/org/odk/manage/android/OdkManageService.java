@@ -16,6 +16,8 @@ import org.odk.common.android.SharedConstants;
 import org.odk.common.android.Task;
 import org.odk.common.android.Task.TaskStatus;
 import org.odk.common.android.Task.TaskType;
+import org.odk.manage.android.comm.CommunicationProtocol;
+import org.odk.manage.android.comm.HttpAdapter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -64,6 +66,10 @@ public class OdkManageService extends Service{
     //TODO(alerer): spawn a separate thread, or a worker, to perform these tasks
     MessageType mType = (MessageType) i.getExtras().get(MESSAGE_TYPE_KEY);
     Log.i(Constants.TAG, "OdkManageService started. Type: " + mType);
+    if (!isImsiRegistered()){
+      registerDevice(CommunicationProtocol.SMS);
+    }
+    
     boolean isConnected = isNetworkConnected();
     switch (mType) {
       case NEW_TASKS:
@@ -89,7 +95,7 @@ public class OdkManageService extends Service{
         Log.d(Constants.TAG, "Phone properties changed.");
         break;
       case PACKAGE_ADDED:
-        handlePackageAdded(i.getExtras().getString("packageName"));
+        handlePackageAddedIntent(i.getExtras().getString("packageName"));
         if (isConnected) {
           sendStatusUpdates();
         }
@@ -134,7 +140,26 @@ public class OdkManageService extends Service{
     registerPhonePropertiesChangeListener();
   }
   
-  private void handlePackageAdded(String packageName){
+  /**
+   * 
+   * @return true if the IMSI is registered with the server, or the IMSI is 
+   * null (i.e. doesn't need registration)
+   */
+  private boolean isImsiRegistered(){
+    // do we actually want SIM serial number?
+    String registeredImsi = prefsAdapter.getString(Constants.PREF_REGISTERED_IMSI_KEY, null);
+    String newImsi = propAdapter.getIMSI();
+    //if the IMSI exists and has changed, then we want to send a registration
+    return (newImsi == null || newImsi.equals(registeredImsi));
+  }
+  
+  private void registerDevice(CommunicationProtocol channel){
+    Log.i(Constants.TAG, "IMSI changed: Registering device");
+    new DeviceRegistrationHandler(this).register(channel);
+  }
+  
+  
+  private void handlePackageAddedIntent(String packageName){
     Log.d(Constants.TAG, "Package added detected: " + packageName);
     List<Task> pendingTasks = dba.getPendingTasks();
     for (Task t: pendingTasks) {
@@ -275,6 +300,7 @@ List<Task> tasks = new ArrayList<Task>();
         }
       }
       Log.d(Constants.TAG, added + " new tasks were added.");
+      setNewTasksPref(false);
     } catch (IOException e) {
       //TODO(alerer): do something here
       Log.e(Constants.TAG, "IOException downloading tasklist", e);

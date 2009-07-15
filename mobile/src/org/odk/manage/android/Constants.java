@@ -24,7 +24,16 @@ public class Constants {
    */
   public static final String PREF_SMS_KEY = "serversms";
   
-  public static final String PREF_SMS_DEFAULT = "48378";
+  /**
+   * The pref key for the last recorded IMSI, to check for IMSI changes.
+   */
+  public static final String PREF_REGISTERED_IMSI_KEY = "imsi";
+
+  
+  //GTEST
+  public static final String PREF_SMS_DEFAULT_SHORT = "48378";
+  
+  public static final String PREF_SMS_DEFAULT_LONG = "+447624804882";
   
   /**
    * The pref key for the operator username
@@ -75,6 +84,5 @@ public class Constants {
    * Name of the local database.
    */
   public static final String DB_NAME = "odk_manage_db";
-
   
 }

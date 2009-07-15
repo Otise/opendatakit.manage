@@ -31,6 +31,10 @@ public class AdminActivity extends Activity {
   @Override
   public void onStop(){
     super.onStop();
+    updatePreferences();
+  }
+  
+  private void updatePreferences(){
     Map<String, String> prefs = new HashMap<String, String>();
     
     prefs.put(Constants.PREF_USERID_KEY, ((EditText) 
@@ -58,36 +62,23 @@ public class AdminActivity extends Activity {
       public void onClick(View v) {
         Log.i(Constants.TAG,"Sending phone registration SMS");
         SmsManager sm = SmsManager.getDefault();
-        try{
-          EditText numField = (EditText) findViewById(R.id.sms_number_text);
-          EditText userIdField = (EditText) findViewById(R.id.user_id_text);
-
-          new SmsSender(ctx).sendSMS(numField.getText().toString(), 
-              Constants.SMS_REGISTER_ACTION,
-              createRegisterMap());
-          
-        } catch (IllegalArgumentException e){
-          Log.e(Constants.TAG,"Illegal argument in ODK Manage SMS Send");
-        }
+        updatePreferences();
+        new DeviceRegistrationHandler(AdminActivity.this).registerBySms();
       }   
     });
-
+    
     // create handler for HTTP register button
     Button registerHttpButton = (Button) findViewById(R.id.register_phone_button_http);
     registerHttpButton.setOnClickListener(new OnClickListener(){
       @Override
       public void onClick(View v) {
         Log.i(Constants.TAG,"Sending phone registration HTTP");
-        try{
-          EditText urlField = (EditText) findViewById(R.id.server_url_text);
-          Map<String,String> paramMap = createRegisterMap();
-          new HttpAdapter().doPost(urlField.getText().toString() + "/" + Constants.REGISTER_PATH, paramMap);
-        } catch (IllegalArgumentException e) {
-          Log.e(Constants.TAG,"Illegal argument in ODK Manage SMS Send");
-        }
+        updatePreferences();
+        new DeviceRegistrationHandler(AdminActivity.this).registerByHttp();
       }   
     });
     
+    // create handler for Get Tasks button
     Button getTasksButton = (Button) findViewById(R.id.get_tasks_button);
     getTasksButton.setOnClickListener(new OnClickListener(){
       @Override
@@ -108,24 +99,7 @@ public class AdminActivity extends Activity {
     ((EditText) findViewById(field)).setText(initVal);
   }
   
-  private Map<String,String> createRegisterMap(){
-    if (phoneProperties == null)
-      phoneProperties = new PhonePropertiesAdapter(this);
-    Map<String,String> paramMap = new HashMap<String,String>();
-    newProperty("userid",((EditText) findViewById(R.id.user_id_text)).getText().toString(), paramMap);
-    newProperty("imei",phoneProperties.getIMEI(), paramMap);
-    newProperty("phonenumber",phoneProperties.getPhoneNumber(), paramMap);
-    newProperty("sim",phoneProperties.getSimSerialNumber(), paramMap);
-    newProperty("imsi",phoneProperties.getIMSI(), paramMap);
-    return paramMap;
-  }
-  
-  public void newProperty(String name, String value, Map<String,String> paramMap){
-    if (name == null || value == null)
-      return;
-    Log.d("OdkManage","New registration property: <" + name + "," + value + ">");
-    paramMap.put(name, value);
-  }
+
  
   
 }

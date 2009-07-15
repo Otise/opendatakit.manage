@@ -19,7 +19,7 @@ public class SharedPreferencesAdapter {
   static {
     prefDefaults = new HashMap<String, String>();
     prefDefaults.put(Constants.PREF_URL_KEY, Constants.PREF_URL_DEFAULT);
-    prefDefaults.put(Constants.PREF_SMS_KEY, Constants.PREF_SMS_DEFAULT);
+    prefDefaults.put(Constants.PREF_SMS_KEY, Constants.PREF_SMS_DEFAULT_SHORT);
   }
   
   private SharedPreferences prefs;
