@@ -1,4 +1,4 @@
-package org.odk.manage.android;
+package org.odk.manage.android.comm;
 
 import android.util.Log;
 
@@ -12,6 +12,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 import org.odk.common.android.SharedConstants;
+import org.odk.manage.android.Constants;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -78,10 +79,9 @@ public class HttpAdapter {
   
   private boolean doPost(HttpPost post) {
     DefaultHttpClient httpclient = new DefaultHttpClient();
-
     HttpResponse response = null;
     try {
-      response = httpclient.execute(post);      
+      response = httpclient.execute(post);
     } catch (ClientProtocolException e) {
       Log.e("OdkManage", "Protocol Exception Error", e);
       e.printStackTrace();
