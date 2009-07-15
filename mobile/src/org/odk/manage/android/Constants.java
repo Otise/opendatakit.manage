@@ -90,6 +90,10 @@ public class Constants {
    */
   public static final String DB_NAME = "odk_manage_db";
 
-
+  /**
+   * Default time alotted to a particular worker task being run by the 
+   * ODKManageService worker thread.
+   */
+  public static final int SERVICE_OPERATION_TIMEOUT_MS = 300000; 
   
 }

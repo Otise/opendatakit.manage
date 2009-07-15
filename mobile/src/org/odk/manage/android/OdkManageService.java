@@ -18,6 +18,8 @@ import org.odk.common.android.Task.TaskStatus;
 import org.odk.common.android.Task.TaskType;
 import org.odk.manage.android.comm.CommunicationProtocol;
 import org.odk.manage.android.comm.HttpAdapter;
+import org.odk.manage.android.worker.Worker;
+import org.odk.manage.android.worker.WorkerTask;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -47,11 +49,12 @@ public class OdkManageService extends Service{
     NEW_TASKS, CONNECTIVITY_CHANGE, PHONE_PROPERTIES_CHANGE, BOOT_COMPLETED, PACKAGE_ADDED;
   }
   
-  public FileHandler mHandler;
+  public FileHandler fileHandler;
   private SharedPreferencesAdapter prefsAdapter;
   private DbAdapter dba;
   private PhonePropertiesAdapter propAdapter;
   private String imei;
+  private Worker worker;
   
   // Lifecycle methods
   
@@ -63,7 +66,23 @@ public class OdkManageService extends Service{
 
   @Override
   public void onStart(Intent i, int startId){
-    //TODO(alerer): spawn a separate thread, or a worker, to perform these tasks
+    //TODO(alerer): these tasks are very coarse-grained. Think about whether more 
+    //fine-grained tasks would be better (e.g. timeouts could be better suited to 
+    //the particular task
+    final Intent mIntent = i;
+    worker.addTask(new WorkerTask(){
+      @Override
+      public void execute(){
+        OdkManageService.this.handleIntent(mIntent);
+      }
+      @Override
+      public long getTimeoutMillis(){ //Not implemented in Worker
+        return Constants.SERVICE_OPERATION_TIMEOUT_MS;
+      }
+    });
+  }
+  
+  private void handleIntent(Intent i){
     MessageType mType = (MessageType) i.getExtras().get(MESSAGE_TYPE_KEY);
     Log.i(Constants.TAG, "OdkManageService started. Type: " + mType);
     
@@ -113,20 +132,7 @@ public class OdkManageService extends Service{
   public void onCreate() {
     super.onCreate();
     Log.i(Constants.TAG, "OdkManageService created.");
-    init();
-  }
-
-  @Override 
-  public void onDestroy() {
-    super.onDestroy();
-    Log.i(Constants.TAG, "OdkManageService destroyed.");
-    dba.close();
-    dba = null;
-  }
-  
-  /////////////////////////
- 
-  private void init(){
+    
     propAdapter = new PhonePropertiesAdapter(this);
     imei = propAdapter.getIMEI();
     
@@ -134,10 +140,27 @@ public class OdkManageService extends Service{
     dba.open();
     
     prefsAdapter = new SharedPreferencesAdapter(this);
-    mHandler = new FileHandler(this);
+    fileHandler = new FileHandler(this);
     
     registerPhonePropertiesChangeListener();
+    
+    worker = new Worker();
+    worker.start();
+    
   }
+
+  @Override 
+  public void onDestroy() {
+
+    Log.i(Constants.TAG, "OdkManageService destroyed.");
+    worker.stop();
+    dba.close();
+    dba = null;
+    super.onDestroy();
+  }
+  
+  /////////////////////////
+ 
   
   private void syncDeviceImeiRegistration(){
     
@@ -436,10 +459,6 @@ List<Task> tasks = new ArrayList<Task>();
               "application/vnd.android.package-archive");
           installIntent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
           startActivity(installIntent2);
-          //TODO(alerer): this doesn't really work properly, because this 
-          //doesn't guarantee that the task has actually been carried out.
-          //We really should be installing the tasks automatically
-          Log.i(Constants.TAG, "Installing package successfull.");
           if (t.getName() == null) {
             return TaskStatus.SUCCESS; // since we don't know the package name, we have to just assume it worked.
           } else {
