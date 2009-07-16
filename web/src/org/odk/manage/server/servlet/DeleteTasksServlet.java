@@ -37,13 +37,17 @@ public class DeleteTasksServlet extends HttpServlet {
     DbAdapter dba = null;
     try { 
       dba = new DbAdapter();
-      Device device = dba.getDevice(imei);
+      Device device = dba.getDevice(imei); //why are we doing this?
       if (device == null){
         resp.getWriter().write("Error: Device does not exist.");
         return;
       }
       for (String id : taskIds){
         Task task = dba.getTask(id);
+        if (task == null) {
+          debug("Task ID did nto correspond to a task...");
+          continue;
+        }
         dba.deleteTask(task);
       }
       resp.sendRedirect("viewTasks?imei=" + imei);

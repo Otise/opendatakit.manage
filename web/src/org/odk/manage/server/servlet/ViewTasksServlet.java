@@ -77,7 +77,7 @@ public class ViewTasksServlet extends HttpServlet {
       outputTasksTable(out, successTasks, imei, TaskStatus.SUCCESS);
       out.write("<h2>Failed Tasks</h2>");
       outputTasksTable(out, failedTasks, imei, TaskStatus.FAILED);
-      
+      out.write("<a class='goback' href='admin.html'>Go back</a>");
     } finally {
       if (dba != null)
         dba.close();
@@ -91,11 +91,11 @@ public class ViewTasksServlet extends HttpServlet {
     out.write("<form action='deleteTasks' method='post'>");
     out.write("<input type='hidden' name='imei' value='" + imei + "'/>");
     out.write("<table class='main'><tr>");
-    out.write("<th><input type='checkbox' id='selectAllCheckbox-" + st + "' onclick='updateSelectAllTasks('taskId','" + st + "')'</th>");
+    out.write("<th><input type='checkbox' id='selectAllCheckbox-" + st + "' onclick='updateSelectAllTasks(this,\"" + st + "\")'</th>");
     out.write("<th>Type</th><th>Name</th><th>URL</th><th>Extras</th></tr>");
     for (Task t: tasks) {
       out.write("<tr>" +
-                "<td><input type='checkbox' name='taskId' status='" + st + "' value='" + t.getUniqueId() + "' onclick='updateSelectedDevice('" + st + "')'/></td>" +
+                "<td><input type='checkbox' name='taskId' status='" + st + "' value='" + t.getUniqueId() + "' onclick='updateSelectedTask(\"" + st + "\")'/></td>" +
                 "<td>" + ServletUtils.removeNull(t.getType().name()) + "</td>" +
                 "<td>" + ServletUtils.removeNull(t.getName()) + "</td>" +
                 "<td>" + ServletUtils.removeNull(t.getUrl()) + "</td>" +

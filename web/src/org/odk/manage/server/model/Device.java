@@ -133,55 +133,37 @@ public class Device {
 	    switch(status){
 	      case PENDING:
 	        numPending += inc;
+	        break;
 	      case SUCCESS:
 	        numSuccess += inc;
+	        break;
 	      case FAILED:
 	        numFailed += inc;
+	        break;
 	    }
   }
-  
-//  private List<Task> getTasklistForStatus(TaskStatus status){
-//    if (status == null){
-//      List<Task> res = new ArrayList<Task>();
-//      res.addAll(pendingTasks);
-//      res.addAll(successTasks);
-//      res.addAll(failedTasks);
-//    }
-//    
-//    switch(status){
-//      case PENDING:
-//        if (pendingTasks == null)
-//          pendingTasks = new ArrayList<Task>();
-//        return pendingTasks;
-//      case SUCCESS:
-//        if (successTasks == null)
-//          successTasks = new ArrayList<Task>();
-//        return successTasks;
-//      case FAILED:
-//        if (failedTasks == null)
-//          failedTasks = new ArrayList<Task>();
-//        return failedTasks;
-//      default:
-//        throw new IllegalArgumentException();
-//    }
-//  }
-  
+
   public void addTask(Task t){
     if (t == null || t.getType()==null || t.getStatus()==null){
       throw new NullPointerException();
     }
     tasks.add(t);
+    t.setDevice(this);
     incTaskCount(t.getStatus(), 1);
   }
  
   
   public boolean removeTask(Task t){
-    //return tasks.remove(t); - doesn't work because of JDO bug
-	int index = tasks.indexOf(t);
-	if (index == -1){
+    // all the nonsense her is because appengine JDO does not really work 
+    // properly on collections. Basically, the 'list' is just a query that finds 
+    // everything that has the correct value in the mappedTo field - you can't 
+    // perform contains() or remove() operations on the list.
+	if (t.getDevice() == null || !t.getDevice().equals(this)){
 		return false;
 	}
-	tasks.remove(index);
+	//XXX(alerer): Appengine's list.remove() doesn't work - but this mapping 
+	// thing does.
+	t.setDevice(null);
 	incTaskCount(t.getStatus(), -1);
 	return true;
   }

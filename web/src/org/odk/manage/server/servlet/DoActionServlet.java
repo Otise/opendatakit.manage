@@ -33,8 +33,12 @@ public class DoActionServlet extends HttpServlet {
     String[] imeis = req.getParameterValues("imei");
     String type = req.getParameter("actionType");
     
-    if (imeis == null || type == null){
-      return;
+    if (imeis == null){
+      redirectMain(resp, "No devices selected.", false);
+    }
+    
+    if (type == null){
+      redirectMain(resp, "No action type selected.", false);
     }
     
     resp.getWriter().write("Performing " + type + " on " + imeis.length + " devices.");

@@ -84,8 +84,10 @@ public class Task {
     return status;
   }
   public void setStatus(TaskStatus ts){
-    device.incTaskCount(status, -1);
-    device.incTaskCount(ts, 1);
+    if (device != null) {
+      device.incTaskCount(status, -1);
+      device.incTaskCount(ts, 1);
+    }
     status = ts;
   }
   public String getUniqueId(){
@@ -111,6 +113,13 @@ public class Task {
   }
   public Device getDevice() {
     return device;
+  }
+  /**
+   * Internal use only! Should only be called by Device.addTask and Device.removeTask;
+   * otherwise, it will break invariants.
+   */
+  protected void setDevice(Device device) {
+    this.device = device;
   }
   @Override
   public String toString() {

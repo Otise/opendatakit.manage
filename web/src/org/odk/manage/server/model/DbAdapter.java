@@ -61,80 +61,24 @@ public class DbAdapter {
       String userId,
       String numberWithValidator){
 
-    Device newDevice = new Device(imei);
+    Device device = getDevice(imei);
+    if (device == null) {
+      device = new Device(imei);
+    }
+    if (phoneNumber != null)
+      device.setPhoneNumber(phoneNumber);
+    if (imsi != null)
+      device.setImsi(imsi);
+    if (sim != null)
+    device.setSim(sim);
+      if (userId != null)
+    device.setUserId(userId);
+      if (phoneNumber != null)
+    device.setNumberWithValidator(numberWithValidator);
+    device.setLastContacted(new Date());
 
-    newDevice.setPhoneNumber(phoneNumber);
-    newDevice.setImsi(imsi);
-    newDevice.setSim(sim);
-    newDevice.setUserId(userId);
-    newDevice.setNumberWithValidator(numberWithValidator);
-    newDevice.setLastContacted(new Date());
-    
-    // XXX(alerer): we want to update oldDevice if it exists, 
-    //but app engine is not cooperating
-    // so we're doing a workaround
-    Device oldDevice = getDevice(imei);
-    if (oldDevice != null) {
-      debug("Found device with IMEI.");
-      if (phoneNumber == null || phoneNumber.equals(""))
-        newDevice.setPhoneNumber(oldDevice.getPhoneNumber());
-      if (imsi == null || imsi.equals(""))
-        newDevice.setImsi(oldDevice.getImsi());
-      if (sim == null || sim.equals(""))
-        newDevice.setSim(oldDevice.getSim());
-      if (userId == null || userId.equals(""))
-        newDevice.setUserId(oldDevice.getUserId());
-      debug("Validator = " + numberWithValidator);
-      if (numberWithValidator == null || numberWithValidator.equals(""))
-        newDevice.setNumberWithValidator(oldDevice.getNumberWithValidator());
-    } else {
-      debug("Did not find device");
-    }  
-    pm.makePersistent(newDevice);
+    pm.makePersistent(device);
       
-//    PersistenceManager pm = null;
-//    try{
-//      pm = PMF.get().getPersistenceManager();
-//      Device device = null;
-//      boolean newQuery = false;
-//      Query q = pm.newQuery(Device.class);
-//      q.setFilter("imei == imeiParam");
-//      q.declareParameters("String imeiParam");
-//      List<Device> results = (List<Device>) q.execute(imei);
-//      if (results.size() > 0) {
-//        debug("Found device with IMEI.");
-//        device = results.get(0);
-//      } else {
-//        newQuery = true;
-//        debug("Did not find device - creating new device");
-//        device = new Device(imei);
-//      }
-    
-    // we will update all non-null/non-empty fields. Null or empty fields are 
-    // not updated, because e.g. numberWithValidator should keep its value 
-    // even if registration occurs later by HTTP. We might want to clarify 
-    // this in case the number changes - maybe do validator separately.
-    // NOTE: this doesnt't work at the moment, because GAE won't allow updates
-//    if (phoneNumber != null && !phoneNumber.equals(""))
-//    {
-//      device.phoneNumber = phoneNumber;
-//      // if the old validator has been invalidated
-//      if (device.phoneNumber != phoneNumber)
-//        device.numberWithValidator = null;
-//    }
-//    if (imsi != null && !imsi.equals(""))
-//      device.imsi = imsi;
-//    if (sim != null && !sim.equals(""))
-//      device.sim = sim;
-//    if (userId != null && !userId.equals(""))
-//        device.userId = userId;
-//    debug("Validator = " + numberWithValidator);
-//    if (numberWithValidator != null && !numberWithValidator.equals("")){
-//      debug("Setting numberWithValidator");
-//      device.numberWithValidator = numberWithValidator;
-//    }
-//    pm.makePersistent(device);
-
   }
   
   public List<Device> getDevices(){
@@ -187,13 +131,15 @@ public class DbAdapter {
     }
   }
   public void deleteTask(Task t){
-    t.getDevice().removeTask(t);
+    Device device = t.getDevice();
+    if (device != null) {
+      device.removeTask(t);
+    }
     pm.deletePersistent(t);
   }
   
   public void close(){
     pm.close();
-    debug("Persistence manager closed");
   }
   
   private void debug(String msg){
