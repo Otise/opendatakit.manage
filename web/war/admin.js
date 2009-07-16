@@ -28,16 +28,33 @@ function updateActionType() {
   }
 }
 
-function updateSelectAll(name) {
-  var selectAll = document.getElementById('selectAllCheckbox');
+function updateSelectAllDevices(selectAll) {
   var checked = selectAll.checked;
-  var checkboxes = document.getElementsByName(name);
+  var checkboxes = document.getElementsByName('imei');
   for (i = 0; i < checkboxes.length; i++) {
     checkboxes[i].checked = checked;
   }
 }
+
 function updateSelectedDevice() {
   var selectAll = document.getElementById('selectAllCheckbox');
+  selectAll.checked = false;
+}
+
+function updateSelectAllTasks(selectAll, status) {
+  var checked = selectAll.checked;
+  var checkboxes = document.getElementsByName('taskId');
+  for (i = 0; i < checkboxes.length; i++) {
+	var cb_attr = checkboxes[i].attributes;
+	var cb_status = attributes.getNamedItem('status');
+	if (cb_status == status) {
+	  checkboxes[i].checked = checked;
+	}
+  }
+}
+
+function updateSelectedTask(status) {
+  var selectAll = document.getElementById('selectAllCheckbox-' + status);
   selectAll.checked = false;
 }
 

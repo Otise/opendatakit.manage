@@ -135,7 +135,7 @@ public class ManageAdminServlet extends HttpServlet {
       out.write("</div>");
       
       out.write("<table class='main'><tr>");
-      out.write("<th><input type='checkbox' id='selectAllCheckbox' onclick='updateSelectAll()'</th>");
+      out.write("<th><input type='checkbox' id='selectAllCheckbox' onclick='updateSelectAllDevices(this)'</th>");
       out.write(devicePropertyThs + "<th colspan=3>Tasks</th><th>View Tasks</th><th>SMS<th>Last Contacted</th></tr>");      
       
       Date now = new Date();
@@ -157,7 +157,7 @@ public class ManageAdminServlet extends HttpServlet {
         assert (devicePropertyNames.length == deviceProperties.length);
         
         // Checkbox TD
-        out.write("<td><input type='checkbox' name='imei' value='" + device.getImei() + "' onclick='updateSelectedDevice('imei')'/></td>");
+        out.write("<td><input type='checkbox' name='imei' value='" + device.getImei() + "' onclick='updateSelectedDevice()'/></td>");
         // Properties TD
         for (String property : deviceProperties) {
           out.write(getPropertyTd(property));
