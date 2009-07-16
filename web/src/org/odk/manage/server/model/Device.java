@@ -124,14 +124,19 @@ public class Device {
     	return numPending + numSuccess + numFailed;
 	}
   }
-  private void setTaskCount(TaskStatus status, int count){
+  /**
+   * Called by Device and Task.
+   * @param status
+   * @param count
+   */
+  protected void incTaskCount(TaskStatus status, int inc){
 	    switch(status){
 	      case PENDING:
-	        numPending = count;
+	        numPending += inc;
 	      case SUCCESS:
-	        numSuccess = count;
+	        numSuccess += inc;
 	      case FAILED:
-	        numFailed = count;
+	        numFailed += inc;
 	    }
   }
   
@@ -166,7 +171,7 @@ public class Device {
       throw new NullPointerException();
     }
     tasks.add(t);
-    setTaskCount(t.getStatus(), getTaskCount(t.getStatus()) + 1);
+    incTaskCount(t.getStatus(), 1);
   }
  
   
@@ -177,7 +182,7 @@ public class Device {
 		return false;
 	}
 	tasks.remove(index);
-	setTaskCount(t.getStatus(), getTaskCount(t.getStatus()) + 1);
+	incTaskCount(t.getStatus(), -1);
 	return true;
   }
   

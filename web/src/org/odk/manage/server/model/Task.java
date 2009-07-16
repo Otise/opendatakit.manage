@@ -84,6 +84,8 @@ public class Task {
     return status;
   }
   public void setStatus(TaskStatus ts){
+    device.incTaskCount(status, -1);
+    device.incTaskCount(ts, 1);
     status = ts;
   }
   public String getUniqueId(){
