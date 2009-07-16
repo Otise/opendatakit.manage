@@ -332,10 +332,8 @@ List<Task> tasks = new ArrayList<Task>();
   private String getTaskListUrl(String baseUrl, String imei){
     if (baseUrl.charAt(baseUrl.length()-1) == '/')
       baseUrl = baseUrl.substring(0, baseUrl.length()-1);
-    //isDevice=true tells the server that it is actually the device requesting
-    //the tasklist - thus, this should count as a device contact (versus an 
-    //administrator requesting the tasklist)
-    return baseUrl + "/tasklist?isDevice=true&imei=" + imei;
+    
+    return baseUrl + "/tasklist?imei=" + imei;
   }
   
   private void processPendingTasks(){
