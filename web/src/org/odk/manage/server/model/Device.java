@@ -101,8 +101,38 @@ public class Device {
     return res;
   }
   
-  public int getTaskCount(Task.TaskStatus status){
-    return getTasks(status).size();
+
+  /**
+   * These are an optimization for the db. We use Integer for pass-by-reference
+   */
+  @Persistent
+  private int numPending;
+  @Persistent
+  private int numSuccess;
+  @Persistent
+  private int numFailed;
+  public int getTaskCount(TaskStatus status){
+    //return getTasks(status).size();
+    switch(status){
+      case PENDING:
+        return numPending;
+      case SUCCESS:
+        return numSuccess;
+      case FAILED:
+        return numFailed;
+      default:
+    	return numPending + numSuccess + numFailed;
+	}
+  }
+  private void setTaskCount(TaskStatus status, int count){
+	    switch(status){
+	      case PENDING:
+	        numPending = count;
+	      case SUCCESS:
+	        numSuccess = count;
+	      case FAILED:
+	        numFailed = count;
+	    }
   }
   
 //  private List<Task> getTasklistForStatus(TaskStatus status){
@@ -136,7 +166,9 @@ public class Device {
       throw new NullPointerException();
     }
     tasks.add(t);
+    setTaskCount(t.getStatus(), getTaskCount(t.getStatus()) + 1);
   }
+ 
   
   public boolean removeTask(Task t){
     //return tasks.remove(t); - doesn't work because of JDO bug
@@ -145,12 +177,14 @@ public class Device {
 		return false;
 	}
 	tasks.remove(index);
+	setTaskCount(t.getStatus(), getTaskCount(t.getStatus()) + 1);
 	return true;
   }
   
   private void checkInvariants(){
     assert(key != null);
     assert(key.equals("imei" + imei));
+    assert(tasks.size() == getTaskCount(null)); //we could do this specifically for each status
   }
 
   public String getImei() {
