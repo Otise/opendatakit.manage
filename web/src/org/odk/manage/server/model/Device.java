@@ -139,7 +139,13 @@ public class Device {
   }
   
   public boolean removeTask(Task t){
-    return tasks.remove(t);
+    //return tasks.remove(t); - doesn't work because of JDO bug
+	int index = tasks.indexOf(t);
+	if (index == -1){
+		return false;
+	}
+	tasks.remove(index);
+	return true;
   }
   
   private void checkInvariants(){
