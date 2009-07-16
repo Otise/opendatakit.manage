@@ -39,19 +39,19 @@ input#actionSubmit {
   margin: 0px 0px; 
 }
 
-table.devices {
+table.main {
   border-width: 1px;
   border-spacing: 2px;
   border-style: outset;
   border-collapse: collapse;
 }
-table.devices th {
+table.main th {
   border-width: 1px;
   padding: 5px;
   border-style: inset;
   background-color: #EEEEEE;
 }
-table.devices td {
+table.main td {
   border-width: 1px;
   padding: 5px;
   border-style: inset;

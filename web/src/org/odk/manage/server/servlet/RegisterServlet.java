@@ -2,7 +2,6 @@ package org.odk.manage.server.servlet;
 
 import org.odk.manage.server.model.DbAdapter;
 
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,7 +43,7 @@ public class RegisterServlet extends HttpServlet {
 //  }
   
   @Override
-  public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+  public void doPost(HttpServletRequest req, HttpServletResponse resp) {
     debug("Entered device registration: " + req.getParameter("imei"));
     DbAdapter dba = null;
     try {

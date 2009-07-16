@@ -178,6 +178,19 @@ public class DbAdapter {
     }
   }
   
+  public Task getTask(String id){
+    Key k = KeyFactory.stringToKey(id);
+    try {
+      return pm.getObjectById(Task.class, k);
+    } catch (JDOObjectNotFoundException e){
+      return null;
+    }
+  }
+  public void deleteTask(Task t){
+    t.getDevice().removeTask(t);
+    pm.deletePersistent(t);
+  }
+  
   public void close(){
     pm.close();
     debug("Persistence manager closed");
@@ -186,18 +199,6 @@ public class DbAdapter {
   private void debug(String msg){
     log.log(Level.WARNING,msg);
   }
+  
 
-  /**
-   * Modifies the task in the datastore and returns the task. The status will 
-   * not be updated in the datastore until {@code close()} is called.
-   * @param id the Task.getUniqueId() for the task.
-   * @param status The new task
-   * @return The corresponding, modified task, or null if no task exists.
-   */
-  public Task updateTaskStatus(String id, TaskStatus status) {
-    Key k = KeyFactory.stringToKey(id);
-    Task t = pm.getObjectById(Task.class, k);
-    t.setStatus(status);
-    return t;
-  }
 }

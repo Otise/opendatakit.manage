@@ -1,6 +1,5 @@
 package org.odk.manage.server.servlet;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.odk.manage.server.AdminAccountsConfig;
 import org.odk.manage.server.SmsSender;
 import org.odk.manage.server.model.DbAdapter;
@@ -90,8 +89,7 @@ public class DoActionServlet extends HttpServlet {
             numSuccess++;
           }
         } else {
-          redirectMain(resp, "Unrecognized action.", false);
-          return;
+          break;
         }
       }
       
@@ -101,9 +99,11 @@ public class DoActionServlet extends HttpServlet {
     }
     if (tasktype != null) {
       redirectMain(resp, "Added task (" + type + ") to " + imeis.length + " devices.", true);
-    } else if (type.equals("NEW_TASK_SMS")) {
+    } else if (type.equals("NEW_TASKS_SMS")) {
       redirectMain(resp, "New tasks SMS notifications were sent to " + numSuccess + 
           " out of " + imeis.length + " devices.", numSuccess > 0 || imeis.length == 0);
+    } else {
+        redirectMain(resp, "Unrecognized action.", false);
     }
   }
   

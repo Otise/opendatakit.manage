@@ -7,19 +7,32 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class AdminAccountsConfig {
+  
+  private static final Logger log = Logger.getLogger(AdminAccountsConfig.class.getName());
+  
   private static final String[] adminAccounts = 
     new String[]{"adam.lerer@gmail.com",
                  "brunette.appengine@gmail.com",
                  "borriellog@gmail.com",
-                 "yanokwa@google.com",
-                 "carlhartung@google.com",
+                 "yanokwa@gmail.com",
+                 "carlhartung@gmail.com",
+                 "wbrunette@gmail.com",
+                 "davinci@gmail.com", //juliec
                  // add authorized admin emails here
   };
+  
+  /**
+   * For testing, we are adding a token that allows you to bypass admin checks.
+   * This should be removed in production.
+   */
+  private static final String adminToken = "ureport";
   
   private static Set<String> adminAccountsHash;
   static {
@@ -48,10 +61,14 @@ public class AdminAccountsConfig {
    */
   public static boolean authenticateAdmin(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     UserService userService = UserServiceFactory.getUserService();
-  
+    // for testing purposes
+    if (req.getParameter("adminToken") != null && req.getParameter("adminToken").equals(adminToken)){
+      return true;
+    }
     String thisURL = req.getRequestURI();
     if (req.getUserPrincipal() == null) {
       resp.sendRedirect(userService.createLoginURL(thisURL));
+      log.log(Level.WARNING, "User not logged in. Redirecting to login page...");
       return false;
     } else if (!isAdmin(req.getUserPrincipal().getName())) {
         resp.getWriter().println("<p>Hello, " +
@@ -59,6 +76,7 @@ public class AdminAccountsConfig {
                                      ". You are not an admin.  You can <a href=\"" +
                                      userService.createLogoutURL(thisURL) +
                                      "\">sign out</a>.</p>");
+        log.log(Level.WARNING, "User not an admin. Cannot access page.");
         return false;
   
     } else {

@@ -81,7 +81,7 @@
     <url-pattern>/update</url-pattern>
   </servlet-mapping>
   
-    <servlet>
+  <servlet>
     <servlet-name>doActionServlet</servlet-name>
     <servlet-class>org.odk.manage.server.servlet.DoActionServlet</servlet-class>
   </servlet>
@@ -89,6 +89,26 @@
   <servlet-mapping>
     <servlet-name>doActionServlet</servlet-name>
     <url-pattern>/doAction</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>viewTasksServlet</servlet-name>
+    <servlet-class>org.odk.manage.server.servlet.ViewTasksServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>viewTasksServlet</servlet-name>
+    <url-pattern>/viewTasks</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>deleteTasksServlet</servlet-name>
+    <servlet-class>org.odk.manage.server.servlet.DeleteTasksServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>deleteTasksServlet</servlet-name>
+    <url-pattern>/deleteTasks</url-pattern>
   </servlet-mapping>
 
 </web-app>

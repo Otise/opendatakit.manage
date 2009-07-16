@@ -14,8 +14,6 @@
 
 package org.odk.manage.server.model;
 
-import com.google.appengine.api.datastore.Key;
-
 import org.odk.manage.server.model.Task.TaskStatus;
 
 import java.util.ArrayList;
@@ -76,12 +74,7 @@ public class Device {
   @Persistent
   private String comments;
   
-  //type DeviceGroup 
-  @Persistent
-  public Key group;
-  
-  // this is a hack because of JDO/GAE
-  @Persistent
+  @Persistent(mappedBy = "device")
   private List<Task> tasks;
   
   /**
@@ -143,6 +136,10 @@ public class Device {
       throw new NullPointerException();
     }
     tasks.add(t);
+  }
+  
+  public boolean removeTask(Task t){
+    return tasks.remove(t);
   }
   
   private void checkInvariants(){

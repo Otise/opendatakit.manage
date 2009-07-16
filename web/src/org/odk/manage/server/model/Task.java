@@ -66,7 +66,8 @@ public class Task {
   @Persistent
   private String extras;
   
-  
+  @Persistent
+  private Device device;
   
   
   //right now, not sure how to deal with different types of tasks, since JDO
@@ -106,9 +107,13 @@ public class Task {
   public String getExtras() {
     return extras;
   }
-  
+  public Device getDevice() {
+    return device;
+  }
+  @Override
   public String toString() {
     return "<" + type + "|" + status + "|" + name + "|" + url + "|" + extras + ">";
   }
+
  
 }

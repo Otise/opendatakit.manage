@@ -1,8 +1,5 @@
 package org.odk.manage.server.servlet;
 
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyFactory;
-
 import org.odk.manage.server.XmlUtils;
 import org.odk.manage.server.model.DbAdapter;
 import org.odk.manage.server.model.Device;
@@ -24,7 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public class TaskListServlet extends HttpServlet {
 
-  private static final Logger log = Logger.getLogger(AddTaskServlet.class.getName());
+  private static final Logger log = Logger.getLogger(TaskListServlet.class.getName());
   
   @Override
   public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -48,6 +45,7 @@ public class TaskListServlet extends HttpServlet {
       String isDevice = req.getParameter("isDevice");
       if (isDevice != null && isDevice.equals("true"))
         device.setLastContacted(new Date());
+      
       //TODO(alerer): I don't know how the datastore handles owned objects. If 
       //it fetches them on-the-fly, we're in trouble (a datastore query for each task).
       List<Task> taskList = device.getTasks(TaskStatus.PENDING);
@@ -70,7 +68,6 @@ public class TaskListServlet extends HttpServlet {
         dba.close();
     }
   }
-  
   
 
   

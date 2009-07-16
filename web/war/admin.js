@@ -28,10 +28,10 @@ function updateActionType() {
   }
 }
 
-function updateSelectAll() {
+function updateSelectAll(name) {
   var selectAll = document.getElementById('selectAllCheckbox');
   var checked = selectAll.checked;
-  var checkboxes = document.getElementsByName('imei');
+  var checkboxes = document.getElementsByName(name);
   for (i = 0; i < checkboxes.length; i++) {
     checkboxes[i].checked = checked;
   }

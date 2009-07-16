@@ -79,7 +79,7 @@ public class ManageAdminServlet extends HttpServlet {
       
       out.write("<div align='right' id='aggregateUrlDiv'><form action='admin.html' method='post'>");
       out.write("ODK Aggregate URL: <input type='text' name='" + Constants.AGGREGATE_DOMAIN_KEY + 
-          "' value='" + StringEscapeUtils.escapeHtml(removeNull(aggregateDomain)) + "'/>");
+          "' value='" + StringEscapeUtils.escapeHtml(ServletUtils.removeNull(aggregateDomain)) + "'/>");
       out.write("<input type='submit' value='Update URL' />");
       out.write("</form></div>");
       String actionMessage = req.getParameter("message");
@@ -134,9 +134,9 @@ public class ManageAdminServlet extends HttpServlet {
       out.write("<input id='actionSubmit' type='submit' value='Submit'/>");
       out.write("</div>");
       
-      out.write("<table class='devices'>");
-      out.write("<tr><th><input type='checkbox' id='selectAllCheckbox' onclick='updateSelectAll()'</th>");
-      out.write(devicePropertyThs + "<th colspan=3>Tasks</th><th>Tasklist</th><th>SMS<th>Last Contacted</th></tr>");      
+      out.write("<table class='main'><tr>");
+      out.write("<th><input type='checkbox' id='selectAllCheckbox' onclick='updateSelectAll()'</th>");
+      out.write(devicePropertyThs + "<th colspan=3>Tasks</th><th>View Tasks</th><th>SMS<th>Last Contacted</th></tr>");      
       
       Date now = new Date();
       for (Device device : devices) {
@@ -157,19 +157,18 @@ public class ManageAdminServlet extends HttpServlet {
         assert (devicePropertyNames.length == deviceProperties.length);
         
         // Checkbox TD
-        out.write("<td><input type='checkbox' name='imei' value='" + device.getImei() + "' onclick='updateSelectedDevice()'/></td>");
+        out.write("<td><input type='checkbox' name='imei' value='" + device.getImei() + "' onclick='updateSelectedDevice('imei')'/></td>");
         // Properties TD
         for (String property : deviceProperties) {
           out.write(getPropertyTd(property));
         }
 
         // Tasklist TD
-        
         out.write("<td status=yellow>" + (numPending>0?numPending:" ") + "</td>");
         out.write("<td status=green>" + (numSuccess>0?numSuccess:" ") + "</td>");
         out.write("<td status=red>" + (numFailed>0?numFailed:" ") + "</td>");
         out.write("<td>");
-        out.write("<a href='tasklist?imei=" + device.getImei() + "'>View Task List</a>");
+        out.write("<a href='viewTasks?imei=" + device.getImei() + "'>View Tasks</a>");
         out.write("</td>");
         
         // Send notification SMS TD
@@ -183,7 +182,7 @@ public class ManageAdminServlet extends HttpServlet {
         out.write("<td>");
         if (device.getLastContacted() != null) {
           long ms = now.getTime() - device.getLastContacted().getTime();
-          out.write(getDurationString(ms) + " ago.");
+          out.write(ServletUtils.getDurationString(ms) + " ago.");
         }
         out.write("</td>");
         out.write("</tr>");
@@ -203,26 +202,10 @@ public class ManageAdminServlet extends HttpServlet {
     }
   }
   
-  private String getDurationString(long ms){
-    long mins = ms / 60000;
-    long hrs = mins / 60;
-    long days = hrs / 24;
-    if (days != 0)
-      return days + " days";
-    if (hrs != 0)
-      return hrs + " hours";
-    return mins + " minutes";
-  }
-  
   private String getPropertyTd(String property){
-    return "<td class='property'>" + StringEscapeUtils.escapeHtml(removeNull(property)) + "</td>\n";
+    return "<td class='property'>" + StringEscapeUtils.escapeHtml(ServletUtils.removeNull(property)) + "</td>\n";
   }
   
-  private String removeNull(String s){
-    if (s == null)
-      return "";
-    return s;
-  }
   
   @Override
   public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
