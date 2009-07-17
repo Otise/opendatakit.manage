@@ -14,6 +14,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * @deprecated Replaced with DoActionServlet.
+ * @author alerer@google.com (Your Name Here)
+ *
+ */
 public class AddTaskServlet extends HttpServlet {
 
   private static final Logger log = Logger.getLogger(AddTaskServlet.class.getName());
@@ -77,7 +82,9 @@ public class AddTaskServlet extends HttpServlet {
       device.addTask(task);
       resp.getWriter().write("Task successfully added");
     } finally {
-      dba.close();
+      if (dba != null){
+        dba.close();
+      }
     }
   }
   
