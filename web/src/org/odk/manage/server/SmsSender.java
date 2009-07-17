@@ -10,8 +10,7 @@ import java.util.logging.Logger;
 
 public class SmsSender {
 
-  public boolean sendNewTaskNotification(Device device) {
-    String content = Constants.NEW_TASKS_TRIGGER + ": " + Constants.NEW_TASKS_CONTENT;
+  public boolean sendSms(Device device, String content) {
     try{
       SmsServiceFactory.getSmsService().sendToMobile(
           new Mobile(device.getNumberWithValidator()), content);
@@ -20,7 +19,11 @@ public class SmsSender {
       debug("Exception sending SMS message: " + e.getStackTrace());
       return false;
     }
-    
+  }
+  
+  public boolean sendNewTaskNotification(Device device, String message) {
+    String content = Constants.NEW_TASKS_TRIGGER + ": " + message;
+    return sendSms(device, content);  
   }
   
   private static final Logger log = Logger.getLogger(SmsSender.class.getName());
