@@ -38,6 +38,7 @@ public class Task {
     this.type = type;
     this.status = status;
     this.statusSynced = true;
+    this.numAttempts = 0;
     checkInvariants();
   }
  
@@ -54,6 +55,8 @@ public class Task {
   private TaskStatus status;
   
   private boolean statusSynced;
+  
+  private int numAttempts;
   
   public TaskType getType(){
     return type;
@@ -72,6 +75,7 @@ public class Task {
   private void checkInvariants(){
     assert(type != null);
     assert(status != null);
+    assert(numAttempts > 0);
   }
   
   @Override
@@ -108,6 +112,12 @@ public class Task {
   }
   public boolean isStatusSynced() {
     return statusSynced;
+  }
+  public void setNumAttempts(int numTries) {
+    this.numAttempts = numTries;
+  }
+  public int getNumAttempts() {
+    return numAttempts;
   }
  
 }

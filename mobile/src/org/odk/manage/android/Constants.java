@@ -94,6 +94,8 @@ public class Constants {
    * Default time alotted to a particular worker task being run by the 
    * ODKManageService worker thread.
    */
-  public static final int SERVICE_OPERATION_TIMEOUT_MS = 300000; 
+  public static final int SERVICE_OPERATION_TIMEOUT_MS = 300000;
+
+  public static final int NUM_TASK_ATTEMPTS = 3; 
   
 }

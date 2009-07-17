@@ -26,7 +26,7 @@ import java.util.Map;
  */
 public class DbAdapter {
 
-  private static final String TASKS_TABLE = "tasks4";
+  private static final String TASKS_TABLE = "tasks6";
   public static final String KEY_TASKS_ID = "id";
   public static final String KEY_TASKS_TYPE = "type";
   public static final String KEY_TASKS_NAME = "name";
@@ -34,6 +34,7 @@ public class DbAdapter {
   public static final String KEY_TASKS_EXTRAS = "extras";
   public static final String KEY_TASKS_STATUS = "status";
   public static final String KEY_TASKS_STATUS_SYNCED = "statussynced";
+  public static final String KEY_TASKS_NUM_ATTEMPTS = "numattempts";
   public static final String[] ALL_TASKS_KEYS =
       new String[] {
           KEY_TASKS_ID,
@@ -42,7 +43,8 @@ public class DbAdapter {
           KEY_TASKS_URL,
           KEY_TASKS_EXTRAS,
           KEY_TASKS_STATUS,
-          KEY_TASKS_STATUS_SYNCED,};
+          KEY_TASKS_STATUS_SYNCED,
+          KEY_TASKS_NUM_ATTEMPTS,};
 
   /**
    * Command to create the table of surveys.
@@ -64,6 +66,8 @@ public class DbAdapter {
           + KEY_TASKS_STATUS
           + " text not null,"
           + KEY_TASKS_STATUS_SYNCED
+          + " int not null," 
+          + KEY_TASKS_NUM_ATTEMPTS
           + " int not null);"; 
 
   private SQLiteDatabase mDb;
@@ -137,6 +141,7 @@ public class DbAdapter {
     values.put(KEY_TASKS_EXTRAS, t.getExtras());
     values.put(KEY_TASKS_STATUS, t.getStatus().name());
     values.put(KEY_TASKS_STATUS_SYNCED, t.isStatusSynced()?1:0);
+    values.put(KEY_TASKS_NUM_ATTEMPTS, t.getNumAttempts());
     
     Log.d(TAG, "Added task. Id: " + t.getUniqueId()
         + ", Type: "+ t.getType()
@@ -242,7 +247,6 @@ public class DbAdapter {
     values.put(KEY_TASKS_STATUS, status.name());
     values.put(KEY_TASKS_STATUS_SYNCED, 0);
     mDb.update(TASKS_TABLE, values, KEY_TASKS_ID + " = ?", new String[]{t.getUniqueId()});
-    
   }
   
   /**
@@ -255,6 +259,19 @@ public class DbAdapter {
     ContentValues values = new ContentValues();
    
     values.put(KEY_TASKS_STATUS_SYNCED, synced?1:0);
+    mDb.update(TASKS_TABLE, values, KEY_TASKS_ID + " = ?", new String[]{t.getUniqueId()});
+  }
+  
+  /**
+   * Increments the number of attempts for this task, both locally and in the database.
+   * @param t The task to be modified.
+   * @param success The new status.
+   */
+  public void incrementNumAttempts(Task t) {
+    t.setNumAttempts(t.getNumAttempts() + 1);
+    ContentValues values = new ContentValues();
+   
+    values.put(KEY_TASKS_NUM_ATTEMPTS, t.getNumAttempts());
     mDb.update(TASKS_TABLE, values, KEY_TASKS_ID + " = ?", new String[]{t.getUniqueId()});
   }
   
@@ -291,6 +308,7 @@ public class DbAdapter {
       task.setUrl(c.getString(indexMap.get(KEY_TASKS_URL)));
       task.setExtras(c.getString(indexMap.get(KEY_TASKS_EXTRAS)));
       task.setStatusSynced(c.getInt(indexMap.get(KEY_TASKS_STATUS_SYNCED)) == 1);
+      task.setNumAttempts(c.getInt(indexMap.get(KEY_TASKS_NUM_ATTEMPTS)));
              
       tasks.add(task);
       c.moveToNext();

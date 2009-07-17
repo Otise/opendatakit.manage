@@ -384,7 +384,11 @@ List<Task> tasks = new ArrayList<Task>();
     Log.i(Constants.TAG,
          "Attempting task\nType: " + t.getType() + 
          "\nURL: " + t.getUrl());
-    
+    if (t.getNumAttempts() >= Constants.NUM_TASK_ATTEMPTS) {
+      return TaskStatus.FAILED;
+    } else {
+      dba.incrementNumAttempts(t);
+    }
     switch(t.getType()) {
       case ADD_FORM:
         return attemptAddForm(t);
