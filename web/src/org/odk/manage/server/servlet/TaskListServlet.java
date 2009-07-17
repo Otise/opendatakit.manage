@@ -42,9 +42,7 @@ public class TaskListServlet extends HttpServlet {
       dba = new DbAdapter();
       Device device = dba.getDevice(imei);
       // the device has made contact
-      String isDevice = req.getParameter("isDevice");
-      if (isDevice != null && isDevice.equals("true"))
-        device.setLastContacted(new Date());
+      device.setLastContacted(new Date());
       
       //TODO(alerer): I don't know how the datastore handles owned objects. If 
       //it fetches them on-the-fly, we're in trouble (a datastore query for each task).

@@ -4,7 +4,6 @@ import org.odk.manage.server.AdminAccountsConfig;
 import org.odk.manage.server.model.DbAdapter;
 import org.odk.manage.server.model.Device;
 import org.odk.manage.server.model.Task;
-import org.odk.manage.server.model.Task.TaskType;
 
 import java.io.IOException;
 import java.util.logging.Level;
