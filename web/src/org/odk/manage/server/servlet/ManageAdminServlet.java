@@ -150,7 +150,7 @@ public class ManageAdminServlet extends HttpServlet {
         int numPending = device.getTaskCount(TaskStatus.PENDING);
         int numSuccess = device.getTaskCount(TaskStatus.SUCCESS);
         int numFailed = device.getTaskCount(TaskStatus.FAILED);
-        String status = (numFailed > 0) ? "red" : (numPending > 0) ? "yellow" : "";
+        String status = (numFailed > 0) ? "FAILED" : (numPending > 0) ? "PENDING" : "";
         out.write("<tr class = 'device' status=" + status + ">");
 
         String[] deviceProperties = new String[]{ 
@@ -171,16 +171,16 @@ public class ManageAdminServlet extends HttpServlet {
         }
 
         // Tasklist TD
-        out.write("<td status=yellow>" + (numPending>0?numPending:" ") + "</td>");
-        out.write("<td status=green>" + (numSuccess>0?numSuccess:" ") + "</td>");
-        out.write("<td status=red>" + (numFailed>0?numFailed:" ") + "</td>");
+        out.write("<td status=PENDING>" + (numPending>0?numPending:" ") + "</td>");
+        out.write("<td status=SUCCESS>" + (numSuccess>0?numSuccess:" ") + "</td>");
+        out.write("<td status=FAILED>" + (numFailed>0?numFailed:" ") + "</td>");
         out.write("<td>");
         out.write("<a href='viewTasks?imei=" + device.getImei() + "'>View Tasks</a>");
         out.write("</td>");
         
         // Send notification SMS TD
         if (device.getNumberWithValidator()!=null) {
-          out.write("<td status=green>Yes</td>");
+          out.write("<td status=SUCCESS>Yes</td>");
         } else {
           out.write("<td></td>");
         }

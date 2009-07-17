@@ -57,13 +57,13 @@ table.main td {
   border-style: inset;
 }
 
-[status=green] {
+[status=SUCCESS] {
   background-color: #BBFFBB
 }
-[status=yellow] {
+[status=PENDING] {
   background-color: #FFFFAA
 }
-[status=red] {
+[status=FAILED] {
   background-color: #FFAAAA
 }
 div.messageDiv {

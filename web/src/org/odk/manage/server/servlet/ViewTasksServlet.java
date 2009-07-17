@@ -94,7 +94,7 @@ public class ViewTasksServlet extends HttpServlet {
     out.write("<th><input type='checkbox' id='selectAllCheckbox-" + st + "' onclick='updateSelectAllTasks(this,\"" + st + "\")'</th>");
     out.write("<th>Type</th><th>Name</th><th>URL</th><th>Extras</th></tr>");
     for (Task t: tasks) {
-      out.write("<tr>" +
+      out.write("<tr status='" + st + "'>" +
                 "<td><input type='checkbox' name='taskId' status='" + st + "' value='" + t.getUniqueId() + "' onclick='updateSelectedTask(\"" + st + "\")'/></td>" +
                 "<td>" + ServletUtils.removeNull(t.getType().name()) + "</td>" +
                 "<td>" + ServletUtils.removeNull(t.getName()) + "</td>" +
