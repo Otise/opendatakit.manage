@@ -42,12 +42,12 @@
   </servlet-mapping>
   
   <servlet>
-    <servlet-name>sendSmsServlet</servlet-name>
-    <servlet-class>org.odk.manage.server.servlet.SendSmsServlet</servlet-class>
+    <servlet-name>smsSenderServlet</servlet-name>
+    <servlet-class>org.odk.manage.server.servlet.SmsSenderServlet</servlet-class>
   </servlet>
   
   <servlet-mapping>
-    <servlet-name>sendSmsServlet</servlet-name>
+    <servlet-name>smsSenderServlet</servlet-name>
     <url-pattern>/sendSms</url-pattern>
   </servlet-mapping>
   
