@@ -35,7 +35,7 @@ import javax.jdo.annotations.PrimaryKey;
 public class Device {
   
   public Device(String imei){
-    this.key = "imei" + imei;
+    this.key = "i" + imei;
     this.imei = imei;
 
     checkInvariants();

@@ -92,7 +92,7 @@ public class DbAdapter {
    * @return The device, or null if no such device exists with that IMEI.
    */
   public Device getDevice(String imei){
-    Key k = KeyFactory.createKey(Device.class.getSimpleName(), "imei" + imei);
+    Key k = KeyFactory.createKey(Device.class.getSimpleName(), "i" + imei);
     try {
       return pm.getObjectById(Device.class, k);
     } catch (JDOObjectNotFoundException e) {
