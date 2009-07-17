@@ -1,6 +1,7 @@
 package org.odk.manage.server.servlet;
 
 import org.odk.manage.server.AdminAccountsConfig;
+import org.odk.manage.server.Constants;
 import org.odk.manage.server.SmsSender;
 import org.odk.manage.server.model.DbAdapter;
 import org.odk.manage.server.model.Device;
@@ -35,13 +36,13 @@ public class DoActionServlet extends HttpServlet {
     
     if (imeis == null){
       redirectMain(resp, "No devices selected.", false);
+      return;
     }
     
     if (type == null){
       redirectMain(resp, "No action type selected.", false);
+      return;
     }
-    
-    resp.getWriter().write("Performing " + type + " on " + imeis.length + " devices.");
     
     TaskType tasktype = null;
     try {
@@ -89,25 +90,36 @@ public class DoActionServlet extends HttpServlet {
           addTask(device, tasktype, TaskStatus.PENDING, name, url, extras);
           numSuccess++;
         } else if (type.equals("NEW_TASKS_SMS")) {
-          if (new SmsSender().sendNewTaskNotification(device)) {
+          if (new SmsSender().sendNewTaskNotification(device, Constants.NEW_TASKS_CONTENT)) {
+            numSuccess++;
+          }
+        } else if (type.equals("SEND_SMS")) {
+          String content = req.getParameter("SEND_SMS.content");
+          if (content == null || content.equals("")){
+            redirectMain(resp, "Message content was empty.", false);
+          }
+          if (content.length() > 140) {
+            redirectMain(resp, "Message is more than 140 characters.", false);
+          }
+          if (new SmsSender().sendSms(device, content)) {
             numSuccess++;
           }
         } else {
-          break;
+          redirectMain(resp, "Unrecognized action (1).", false);
         }
       }
-      
+     
     } finally {
       dba.close();
       dba = null;
     }
     if (tasktype != null) {
       redirectMain(resp, "Added task (" + type + ") to " + imeis.length + " devices.", true);
-    } else if (type.equals("NEW_TASKS_SMS")) {
-      redirectMain(resp, "New tasks SMS notifications were sent to " + numSuccess + 
+    } else if (type.equals("NEW_TASKS_SMS") || type.equals("SEND_SMS")) {
+      redirectMain(resp, "SMS messages were sent to " + numSuccess + 
           " out of " + imeis.length + " devices.", numSuccess > 0 || imeis.length == 0);
     } else {
-        redirectMain(resp, "Unrecognized action.", false);
+        redirectMain(resp, "Unrecognized action (2).", false);
     }
   }
   

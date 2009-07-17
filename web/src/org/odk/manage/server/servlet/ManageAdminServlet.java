@@ -98,7 +98,8 @@ public class ManageAdminServlet extends HttpServlet {
       out.write("<option value='' selected='true'></option>");
       out.write("<option value='ADD_FORM'>Add Form</option>");
       out.write("<option value='INSTALL_PACKAGE'>Install Package</option>");
-      out.write("<option value='NEW_TASKS_SMS'>Send New Tasks SMS</option>");
+      out.write("<option value='NEW_TASKS_SMS'>Send New Tasks Notification SMS</option>");
+      out.write("<option value='SEND_SMS'>Send SMS Message</option>");
       out.write("</select>");
       out.write("<br/>");
       
@@ -121,7 +122,7 @@ public class ManageAdminServlet extends HttpServlet {
               "Form URL: <input name='ADD_FORM.url' type='text'></div>");
 
       } else {
-        out.write("Form URL: <input type='text' name='ADD_FORM.url'/><br>");
+        out.write("Form URL: <input type='text' name='ADD_FORM.url'/>");
       }
       out.write("</div>");
       
@@ -129,7 +130,13 @@ public class ManageAdminServlet extends HttpServlet {
       out.write("<table><tr><td>Package Name: </td><td><input type='text' name='INSTALL_PACKAGE.name' value='org.odk.collect.android'/></td>");
       out.write("<tr><td>Package URL: </td><td><input type='text' name='INSTALL_PACKAGE.url'/></td></table>");
       out.write("</div>");
+      
       out.write("<div class='actionInputs'id='NEW_TASKS_SMS_INPUTS'></div>");
+      
+      out.write("<div class='actionInputs' id='SEND_SMS_INPUTS' >");
+      out.write("Message: <br/><textarea name='SEND_SMS.content' cols='35' rows='4'></textarea>");
+      out.write("<br/>Note: Messages can be no longer than 140 characters.");
+      out.write("</div>");
       
       out.write("<input id='actionSubmit' type='submit' value='Submit'/>");
       out.write("</div>");
