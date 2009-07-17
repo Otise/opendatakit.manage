@@ -32,18 +32,19 @@ class Device(db.Model):
 def delete_tasks():
   res = Task.all().fetch(1000)
   i = 1
-  for t in res:
-    t.delete()
-    print 'task ' + str(i)
-    i = i + 1
+  while(True):
+    for t in res:
+      t.delete()
+      print 'task ' + str(i)
+      i = i + 1
     
 def delete_devices():
-  res = Device.all().fetch(1000)
-  i = 1
-  for t in res:
-    t.delete()
-    print 'device ' + str(i)
-    i = i + 1
-    
-delete_tasks()  
+    res = Device.all().fetch(1000)
+    i = 1
+    for t in res:
+      t.delete()
+      print 'device ' + str(i)
+      i = i + 1
+     
 delete_devices()
+delete_tasks() 

@@ -10,7 +10,7 @@ def loadDevicesAndTasks(numDevices, numTasks, offset=0):
     
 def loadDevice(n):
   url = domain + '/register'
-  imei = str(1000000 + n)
+  imei = str(10000000000000000 + n)
   values = {'imei' : imei,
             'userid' : 'User' + str(n),
             'phonenumber' : '+123456' + str(n),
@@ -41,4 +41,4 @@ def doPost(url, values):
   except:
     print 'Error'
 
-loadDevicesAndTasks(10, 10, offset=0)
+loadDevicesAndTasks(1, 0, offset=500)

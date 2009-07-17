@@ -75,3 +75,6 @@ div.messageDiv[messageType=error] {
 div.messageDiv[messageType=success] {
   color: green;
 }
+.goback {
+  float:right;
+}
