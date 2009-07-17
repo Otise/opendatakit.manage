@@ -1,10 +1,12 @@
 function updateAggregateFormSelect() {
   var aggregateFormSel = document.getElementById('aggregateFormSelect')
   var otherUrl = document.getElementById('otherUrl');
-  if (aggregateFormSel && otherUrl && aggregateFormSel.value == 'other') {
-    otherUrl.style.display = 'block';
-  } else {
-    otherUrl.style.display = 'none';
+  if (aggregateFormSel && otherUrl) {
+    if (aggregateFormSel.value == 'other') {
+      otherUrl.style.display = 'block';
+    } else {
+      otherUrl.style.display = 'none';
+    }
   }
 }
 
@@ -15,6 +17,8 @@ function updateActionType() {
   document.getElementById('ADD_FORM_INPUTS').style.display = 'none';
   document.getElementById('INSTALL_PACKAGE_INPUTS').style.display = 'none';
   document.getElementById('NEW_TASKS_SMS_INPUTS').style.display = 'none';
+  document.getElementById('SEND_SMS_INPUTS').style.display = 'none';
+  /* TODO(alerer): we don't need to actually specify each one here */
   switch(type){
   case 'ADD_FORM':
     document.getElementById('ADD_FORM_INPUTS').style.display = 'block';
@@ -24,6 +28,9 @@ function updateActionType() {
     break;
   case 'NEW_TASKS_SMS':
     document.getElementById('NEW_TASKS_SMS_INPUTS').style.display = 'block';
+    break;
+  case 'SEND_SMS':
+    document.getElementById('SEND_SMS_INPUTS').style.display = 'block';
     break;
   }
 }
@@ -46,7 +53,7 @@ function updateSelectAllTasks(selectAll, status) {
   var checkboxes = document.getElementsByName('taskId');
   for (i = 0; i < checkboxes.length; i++) {
 	var cb_attr = checkboxes[i].attributes;
-	var cb_status = attributes.getNamedItem('status');
+	var cb_status = cb_attr.getNamedItem('status').value;
 	if (cb_status == status) {
 	  checkboxes[i].checked = checked;
 	}
