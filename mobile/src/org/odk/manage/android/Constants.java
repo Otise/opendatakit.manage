@@ -21,6 +21,11 @@ public class Constants {
   public static final boolean SUPPORTS_SMS = true;
   
   /**
+   * If true, the client will attempt to use GPRS for data transfer when available.
+   */
+  public static final boolean SUPPORTS_GPRS = true;
+  
+  /**
    * The default URL of the Manage server.
    */
   public static final String PREF_URL_DEFAULT = "http://sms-api-test.appspot.com";

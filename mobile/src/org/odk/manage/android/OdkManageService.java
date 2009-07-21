@@ -194,7 +194,9 @@ public class OdkManageService extends Service{
 
   private boolean isNetworkConnected(){
     NetworkInfo ni = getNetworkInfo();
-    return (ni != null && NetworkInfo.State.CONNECTED.equals(ni.getState()));
+    ni.getType();
+    return (ni != null && NetworkInfo.State.CONNECTED.equals(ni.getState()) && 
+        (Constants.SUPPORTS_GPRS || ni.getType() == ConnectivityManager.TYPE_WIFI)); //if GPRS not supported, do not use it
   }
   
   
@@ -234,12 +236,6 @@ public class OdkManageService extends Service{
   private NetworkInfo getNetworkInfo() {
     ConnectivityManager cm = (ConnectivityManager) 
         getSystemService(Context.CONNECTIVITY_SERVICE);
-    
-    // going to print a bunch of network status info to logs
-    NetworkInfo mobileNi = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-    Log.d(Constants.TAG, "Mobile status: " + mobileNi.getState().name());
-    NetworkInfo wifiNi = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-    Log.d(Constants.TAG, "Wifi status: " + wifiNi.getState().name());
     
     NetworkInfo activeNi = cm.getActiveNetworkInfo();
     if (activeNi != null) {
