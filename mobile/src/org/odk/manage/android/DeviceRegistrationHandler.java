@@ -39,18 +39,20 @@ public class DeviceRegistrationHandler {
     }
     String registeredImsi = prefsAdapter.getString(Constants.PREF_REGISTERED_IMSI_KEY, null);
     String newImsi = propsAdapter.getIMSI();
-    //if the IMSI exists and has changed, then we want to send a registration
-    return (newImsi != null && !newImsi.equals(registeredImsi));
+    //if the IMSI has changed, then we want to send a registration
+    if ((newImsi==null && registeredImsi==null) || newImsi.equals(registeredImsi)) {
+      return false;
+    } else {
+      return true;
+    }
   }
   
-  public void register(CommunicationProtocol protocol){
-    switch (protocol){
-      case SMS:
-        registerBySms();
-        break;
-      case HTTP:
-        registerByHttp();
-        break;
+  public void register() {
+    if (propsAdapter.getIMSI() == null || !Constants.SUPPORTS_SMS) {
+      registerByHttp();
+      return;
+    } else {
+      registerBySms();
     }
   }
   public void registerBySms(){

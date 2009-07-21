@@ -19,7 +19,7 @@ public class SharedPreferencesAdapter {
   static {
     prefDefaults = new HashMap<String, String>();
     prefDefaults.put(Constants.PREF_URL_KEY, Constants.PREF_URL_DEFAULT);
-    prefDefaults.put(Constants.PREF_SMS_KEY, Constants.PREF_SMS_DEFAULT_LONG);
+    prefDefaults.put(Constants.PREF_SMS_KEY, Constants.PREF_SMS_DEFAULT);
   }
   
   private SharedPreferences prefs;
@@ -59,6 +59,15 @@ public class SharedPreferencesAdapter {
   public boolean setPreference(String key, boolean value){
     SharedPreferences.Editor editor = prefs.edit();
     editor.putBoolean(key, value);
+    return editor.commit();
+  }
+  
+  public long getLong(String key, long defValue){
+    return prefs.getLong(key, defValue);
+  }
+  public boolean setPreference(String key, long value){
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putLong(key, value);
     return editor.commit();
   }
   

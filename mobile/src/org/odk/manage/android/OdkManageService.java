@@ -11,13 +11,13 @@ import android.net.Uri;
 import android.os.IBinder;
 import android.util.Log;
 
-import org.odk.common.android.FileHandler;
-import org.odk.common.android.SharedConstants;
-import org.odk.common.android.Task;
-import org.odk.common.android.Task.TaskStatus;
-import org.odk.common.android.Task.TaskType;
 import org.odk.manage.android.comm.CommunicationProtocol;
+import org.odk.manage.android.comm.FileHandler;
 import org.odk.manage.android.comm.HttpAdapter;
+import org.odk.manage.android.model.DbAdapter;
+import org.odk.manage.android.model.Task;
+import org.odk.manage.android.model.Task.TaskStatus;
+import org.odk.manage.android.model.Task.TaskType;
 import org.odk.manage.android.worker.Worker;
 import org.odk.manage.android.worker.WorkerTask;
 import org.w3c.dom.Document;
@@ -31,22 +31,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-// TODO(alerer): some of these methods need to be synchronized
-// Actually, it may be better to run all tasks synchronously with a work queue
-// instead of running them concurrently - this will prevent overutilizing system 
-// resources, as well as reducing the risk of concurrency bugs. Just need to 
-// make sure that all tasks will timeout properly.
 public class OdkManageService extends Service{
 
   public static final String MESSAGE_TYPE_KEY = "messagetype";
   public static enum MessageType {
-    NEW_TASKS, CONNECTIVITY_CHANGE, PHONE_PROPERTIES_CHANGE, BOOT_COMPLETED, PACKAGE_ADDED;
+    NEW_TASKS, CONNECTIVITY_CHANGE, PHONE_PROPERTIES_CHANGE, BOOT_COMPLETED, PACKAGE_ADDED, TIMER;
   }
   
   public FileHandler fileHandler;
@@ -55,6 +51,7 @@ public class OdkManageService extends Service{
   private PhonePropertiesAdapter propAdapter;
   private String imei;
   private Worker worker;
+  private Thread timerThread;
   
   // Lifecycle methods
   
@@ -82,52 +79,6 @@ public class OdkManageService extends Service{
     });
   }
   
-  private void handleIntent(Intent i){
-    MessageType mType = (MessageType) i.getExtras().get(MESSAGE_TYPE_KEY);
-    Log.i(Constants.TAG, "OdkManageService started. Type: " + mType);
-    
-    syncDeviceImeiRegistration();
-    
-    //TODO(alerer): use the CommunicationStategy
-    boolean isConnected = isNetworkConnected();
-    switch (mType) {
-      case NEW_TASKS:
-        setNewTasksPref(true);
-        
-        if (isConnected) {
-          requestNewTasks();
-          processPendingTasks();
-          sendStatusUpdates();
-        }
-        break; 
-      case CONNECTIVITY_CHANGE:
-        if (isConnected) {
-          if (getNewTasksPref()){
-            requestNewTasks();
-          }
-          processPendingTasks();
-          sendStatusUpdates();
-        }
-        break;
-      case PHONE_PROPERTIES_CHANGE:
-        Log.d(Constants.TAG, "Phone properties changed.");
-        break;
-      case PACKAGE_ADDED:
-        handlePackageAddedIntent(i.getExtras().getString("packageName"));
-        if (isConnected) {
-          sendStatusUpdates();
-        }
-        break;
-      default:
-        Log.w(Constants.TAG, "Unexpected MessageType in OdkManageService");
-    }
-  }
-  
-  private boolean isNetworkConnected(){
-    NetworkInfo ni = getNetworkInfo();
-    return (ni != null && NetworkInfo.State.CONNECTED.equals(ni.getState()));
-  }
-  
   @Override 
   public void onCreate() {
     super.onCreate();
@@ -147,6 +98,26 @@ public class OdkManageService extends Service{
     worker = new Worker();
     worker.start();
     
+    // Creates a timer thread that will wake up OdkManageService periodically
+    if (timerThread == null){
+      timerThread = new Thread(){
+        @Override
+        public void run(){
+          while(timerThread == this){ //it will stop when we set it to null
+            try {
+              sleep(Constants.TIMER_PERIOD_MS);
+            } catch(InterruptedException e){
+              continue;
+            }
+            Context ctx = OdkManageService.this;
+            Intent i = new Intent(ctx, OdkManageService.class);
+            i.putExtra(OdkManageService.MESSAGE_TYPE_KEY, MessageType.TIMER);
+            ctx.startService(i);
+          }
+        }
+      };
+      timerThread.start();
+    }
   }
 
   @Override 
@@ -154,6 +125,9 @@ public class OdkManageService extends Service{
 
     Log.i(Constants.TAG, "OdkManageService destroyed.");
     worker.stop();
+    worker = null;
+    timerThread = null;
+    
     dba.close();
     dba = null;
     super.onDestroy();
@@ -161,13 +135,75 @@ public class OdkManageService extends Service{
   
   /////////////////////////
  
+  private void handleIntent(Intent i){
+    MessageType mType = (MessageType) i.getExtras().get(MESSAGE_TYPE_KEY);
+    Log.i(Constants.TAG, "OdkManageService started. Type: " + mType);
+    
+    syncDeviceImeiRegistration();
+    
+    //TODO(alerer): use the CommunicationStategy
+    boolean isConnected = isNetworkConnected();
+    switch (mType) {
+      case NEW_TASKS:
+        prefsAdapter.setPreference(Constants.PREF_NEW_TASKS_KEY, true);
+        break; 
+      case PACKAGE_ADDED:
+        handlePackageAddedIntent(i.getExtras().getString("packageName"));
+        if (isConnected) {
+          sendStatusUpdates();
+        }
+        break;
+      case CONNECTIVITY_CHANGE:
+      case PHONE_PROPERTIES_CHANGE:
+      case TIMER:
+      case BOOT_COMPLETED:
+        break;
+      default:
+        Log.w(Constants.TAG, "Unexpected MessageType in OdkManageService");
+    }
+    // do housekeeping that is unrelated to the message type: requesting tasks 
+    // if necessary, processing pending tasks, sending status updates
+    if (isConnected){
+      if (shouldRequestNewTasks()){
+        requestNewTasks();
+      }
+      processPendingTasks();
+      sendStatusUpdates();
+    }
+  }
+  
+  private boolean shouldRequestNewTasks() {
+    long lastRequested = prefsAdapter.getLong(Constants.PREF_TASKS_LAST_DOWNLOADED_KEY, 0);
+    
+    /**
+     * If it's been more than Constants.TASK_REQUEST_PERIOD_MS since last update
+     * return true.
+     */
+    if (Constants.TASK_REQUEST_PERIOD_MS > 0 && 
+        (new Date()).getTime() - lastRequested > Constants.TASK_REQUEST_PERIOD_MS)
+      return true;
+    
+    /**
+     * If we got notified of new tasks, return true.
+     */
+    if (prefsAdapter.getBoolean(Constants.PREF_NEW_TASKS_KEY, false))
+      return true;
+    
+    return false;
+  }
+
+  private boolean isNetworkConnected(){
+    NetworkInfo ni = getNetworkInfo();
+    return (ni != null && NetworkInfo.State.CONNECTED.equals(ni.getState()));
+  }
+  
   
   private void syncDeviceImeiRegistration(){
     
     DeviceRegistrationHandler drh = new DeviceRegistrationHandler(this);
     if (drh.registrationNeededForImei()){
       Log.i(Constants.TAG, "IMSI changed: Registering device");
-      drh.register(CommunicationProtocol.SMS);
+      drh.register();
     }
   }
   
@@ -313,7 +349,7 @@ List<Task> tasks = new ArrayList<Task>();
         }
       }
       Log.d(Constants.TAG, added + " new tasks were added.");
-      setNewTasksPref(false);
+      onNewTasksReceived();
     } catch (IOException e) {
       //TODO(alerer): do something here
       Log.e(Constants.TAG, "IOException downloading tasklist", e);
@@ -407,7 +443,7 @@ List<Task> tasks = new ArrayList<Task>();
     FileHandler fh = new FileHandler(this);
     File formsDirectory = null;
     try { 
-      formsDirectory = fh.getDirectory(SharedConstants.FORMS_PATH);
+      formsDirectory = fh.getDirectory(Constants.FORMS_PATH);
     } catch (IOException e){
       Log.e("OdkManage", "IOException getting forms directory");
       return TaskStatus.PENDING;
@@ -478,13 +514,9 @@ List<Task> tasks = new ArrayList<Task>();
     }
   }
   
-  private boolean getNewTasksPref(){
-    return prefsAdapter.getPreferences().getBoolean(Constants.PREF_NEW_TASKS_KEY, false);
-  }
-  private void setNewTasksPref(boolean newValue){
-    SharedPreferences.Editor editor = prefsAdapter.getPreferences().edit();
-    editor.putBoolean(Constants.PREF_NEW_TASKS_KEY, newValue);
-    editor.commit();
+  public void onNewTasksReceived(){
+    prefsAdapter.setPreference(Constants.PREF_NEW_TASKS_KEY, false);
+    prefsAdapter.setPreference(Constants.PREF_TASKS_LAST_DOWNLOADED_KEY, new Date().getTime());
   }
 
 }

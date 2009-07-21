@@ -49,7 +49,8 @@ public class IntentReceiver extends BroadcastReceiver {
       startOdkManageService(ctx, OdkManageService.MessageType.BOOT_COMPLETED, null);
     } 
     // Package added
-    else if (action.equals(Intent.ACTION_PACKAGE_ADDED)) {
+    else if (action.equals(Intent.ACTION_PACKAGE_ADDED) ||
+        isIntentForThisPackageRemoved(intent)) {
       Log.w(Constants.TAG, "Picked up package added: " + intent.getDataString() + "!");
       Map<String, String> extras = new HashMap<String, String>(1);
       extras.put("packageName", intent.getData().getSchemeSpecificPart());
@@ -62,6 +63,21 @@ public class IntentReceiver extends BroadcastReceiver {
 
   }
   
+  /**
+   * This is a hack because Android is stupid and won't let an 
+   * application detect when it is itself added. Therefore, it 
+   * can only detect iself being removed.
+   */
+  private boolean isIntentForThisPackageRemoved(Intent i){
+    if (i.getAction().equals(Intent.ACTION_PACKAGE_REMOVED)) {
+      String data = i.getData().getSchemeSpecificPart();
+      String thisPackage = getClass().getPackage().getName();
+      if (data.equals(thisPackage)) {
+        return true;
+      }
+    }
+    return false;
+  }
   private void startOdkManageService(Context ctx, 
       OdkManageService.MessageType messageType, Map<String, String> extras){
     
@@ -84,8 +100,8 @@ public class IntentReceiver extends BroadcastReceiver {
   
   private void parseSmsForOdkManageMessages(Context ctx, Intent intent){
     SmsMessage msgs[] = getMessagesFromIntent(intent);
-    String message = "";
-    String number = "";
+    String message;
+    String number;
 
     for (SmsMessage msg: msgs) {
       message = msg.getDisplayMessageBody();

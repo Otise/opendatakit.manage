@@ -11,7 +11,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
-import org.odk.common.android.SharedConstants;
 import org.odk.manage.android.Constants;
 
 import java.io.IOException;
@@ -46,38 +45,17 @@ public class HttpAdapter {
     URL u = new URL(url);
     Log.d(Constants.TAG, "Opening connection to " + url);
     URLConnection c = u.openConnection();
-    c.setConnectTimeout(SharedConstants.CONNECTION_TIMEOUT);
-    c.setReadTimeout(SharedConstants.CONNECTION_TIMEOUT);
+    c.setConnectTimeout(Constants.CONNECTION_TIMEOUT_MS);
+    c.setReadTimeout(Constants.CONNECTION_TIMEOUT_MS);
     
     return c.getInputStream();
-    
-//    DefaultHttpClient httpclient = new DefaultHttpClient();
-//
-//    HttpGet myget = new HttpGet(url);
-//    HttpResponse response = null;
-//    try {
-//      response = httpclient.execute(myget);   
-//    } catch (ClientProtocolException e) {
-//      Log.e("OdkManage", "Protocol Exception Error", e);
-//      e.printStackTrace();
-//      return null;
-//    }
-//    
-//    if (response != null && response.getStatusLine().getStatusCode() == 200) {
-//      Log.d("httpPost", "response: " + response.getStatusLine());
-//      if (response.getEntity() != null) {
-//        response.getEntity().
-//        return response.getEntity().getContent();
-//      } else {
-//        return null;
-//      }
-//    } else {
-//      Log.e("OdkManage", "failure: " + response.getStatusLine());
-//      return null;
-//    }
   }
   
   private boolean doPost(HttpPost post) {
+    //TODO(alerer): what's the equivalent here of the following for URLConnection?
+    //    c.setConnectTimeout(Constants.CONNECTION_TIMEOUT_MS);
+    //    c.setReadTimeout(Constants.CONNECTION_TIMEOUT_MS);
+    
     DefaultHttpClient httpclient = new DefaultHttpClient();
     HttpResponse response = null;
     try {

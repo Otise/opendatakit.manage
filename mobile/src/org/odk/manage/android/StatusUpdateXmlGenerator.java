@@ -1,6 +1,6 @@
 package org.odk.manage.android;
 
-import org.odk.common.android.Task;
+import org.odk.manage.android.model.Task;
 
 import java.util.ArrayList;
 import java.util.List;
