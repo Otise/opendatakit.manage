@@ -2,12 +2,13 @@ package org.odk.manage.server.servlet;
 
 import org.odk.manage.server.AdminAccountsConfig;
 import org.odk.manage.server.Constants;
-import org.odk.manage.server.SmsSender;
 import org.odk.manage.server.model.DbAdapter;
 import org.odk.manage.server.model.Device;
 import org.odk.manage.server.model.Task;
 import org.odk.manage.server.model.Task.TaskStatus;
 import org.odk.manage.server.model.Task.TaskType;
+import org.odk.manage.server.sms.SmsAdapter;
+import org.odk.manage.server.sms.SmsAdapterFactory;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -22,6 +23,7 @@ public class DoActionServlet extends HttpServlet {
   private static final Logger log = Logger.getLogger(DoActionServlet.class.getName());
   
   private DbAdapter dba = null;
+  SmsAdapter smsAdapter = SmsAdapterFactory.getAdapter();
   
   @Override
   public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -90,7 +92,7 @@ public class DoActionServlet extends HttpServlet {
           addTask(device, tasktype, TaskStatus.PENDING, name, url, extras);
           numSuccess++;
         } else if (type.equals("NEW_TASKS_SMS")) {
-          if (new SmsSender().sendNewTaskNotification(device, Constants.NEW_TASKS_CONTENT)) {
+          if (smsAdapter.sendSms(device, Constants.NEW_TASKS_TRIGGER + ": " + Constants.NEW_TASKS_CONTENT)) {
             numSuccess++;
           }
         } else if (type.equals("SEND_SMS")) {
@@ -101,7 +103,7 @@ public class DoActionServlet extends HttpServlet {
           if (content.length() > 140) {
             redirectMain(resp, "Message is more than 140 characters.", false);
           }
-          if (new SmsSender().sendSms(device, content)) {
+          if (smsAdapter.sendSms(device, content)) {
             numSuccess++;
           }
         } else {

@@ -170,7 +170,7 @@ public class Device {
   
   private void checkInvariants(){
     assert(key != null);
-    assert(key.equals("imei" + imei));
+    assert(key.equals("i" + imei));
     assert(tasks.size() == getTaskCount(null)); //we could do this specifically for each status
   }
 

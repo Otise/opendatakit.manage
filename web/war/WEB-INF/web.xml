@@ -42,22 +42,12 @@
   </servlet-mapping>
   
   <servlet>
-    <servlet-name>smsSenderServlet</servlet-name>
-    <servlet-class>org.odk.manage.server.servlet.SmsSenderServlet</servlet-class>
+    <servlet-name>appengineSmsAdapter</servlet-name>
+    <servlet-class>org.odk.manage.server.sms.AppengineSmsAdapter</servlet-class>
   </servlet>
   
   <servlet-mapping>
-    <servlet-name>smsSenderServlet</servlet-name>
-    <url-pattern>/sendSms</url-pattern>
-  </servlet-mapping>
-  
-  <servlet>
-    <servlet-name>smsReceiver</servlet-name>
-    <servlet-class>org.odk.manage.server.servlet.SmsReceiverServlet</servlet-class>
-  </servlet>
-  
-  <servlet-mapping>
-    <servlet-name>smsReceiver</servlet-name>
+    <servlet-name>appengineSmsAdapter</servlet-name>
     <url-pattern>/_ah/sms/message/</url-pattern>
   </servlet-mapping>
   
