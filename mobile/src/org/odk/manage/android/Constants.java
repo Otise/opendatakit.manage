@@ -28,12 +28,12 @@ public class Constants {
   /**
    * The default URL of the Manage server.
    */
-  public static final String PREF_URL_DEFAULT = "http://sms-api-test.appspot.com";
+  public static final String PREF_URL_DEFAULT = "";
   
   /**
    * The default SMS number of the Manage server.
-   */
-  public static final String PREF_SMS_DEFAULT = "+447624804882"; //"48378";
+   */ 
+  public static final String PREF_SMS_DEFAULT = ""; //"48378";
   
   
   //--------------------------------------------------------------------
