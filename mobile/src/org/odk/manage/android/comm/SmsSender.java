@@ -40,7 +40,7 @@ public class SmsSender {
      * This is a hard check to make sure that SMS's are NEVER sent if SMS 
      * sending is disabled.
      */
-    if (prefsAdapter.getBoolean(Constants.PREF_SMS_ENABLED_KEY, false)){
+    if (!prefsAdapter.getBoolean(Constants.PREF_SMS_ENABLED_KEY, false)){
       Log.e(Constants.TAG, "Application tried to send SMS while SMS was disabled.");
       return;
     }
