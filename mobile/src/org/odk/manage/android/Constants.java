@@ -18,12 +18,12 @@ public class Constants {
    * If true, the client will register with the server via SMS. If false, the 
    * client will register via HTTP.
    */
-  public static final boolean SUPPORTS_SMS = true;
+  public static final boolean PREF_SMS_ENABLED_DEFAULT = false;
   
   /**
    * If true, the client will attempt to use GPRS for data transfer when available.
    */
-  public static final boolean SUPPORTS_GPRS = true;
+  public static final boolean PREF_GPRS_ENABLED_DEFAULT = true;
   
   /**
    * The default URL of the Manage server.
@@ -35,21 +35,6 @@ public class Constants {
    */
   public static final String PREF_SMS_DEFAULT = "+447624804882"; //"48378";
   
-  /**
-   * The number of times a task should be attempted before it fails.
-   */
-  public static final int NUM_TASK_ATTEMPTS = 3; 
-  
-  /**
-   * Default time alotted to a particular worker task being run by the 
-   * ODKManageService worker thread.
-   */
-  public static final int SERVICE_OPERATION_TIMEOUT_MS = 300000;
-  
-  /**
-   * How long to wait when opening network connection in milliseconds
-   */
-  public static final int CONNECTION_TIMEOUT_MS = 5000;
   
   //--------------------------------------------------------------------
   //                          Constants
@@ -61,21 +46,28 @@ public class Constants {
   public static final String TAG = "OdkManage";
   
   //----------------------Preferences-----------------------------
+  //--- Note: these must be kept consistent with res/values/preference_keys.xml
   
   /**
-   * The name of the preferences file for ODK Manage.
+   * If true, the client will register with the server via SMS. If false, the 
+   * client will register via HTTP.
    */
-  public static final String PREFS_NAME = "OdkManagePrefs";
+  public static final String PREF_SMS_ENABLED_KEY = "smsEnabled";
+  
+  /**
+   * If true, the client will attempt to use GPRS for data transfer when available.
+   */
+  public static final String PREF_GPRS_ENABLED_KEY = "gprsEnabled";
   
   /**
    * The pref key for the URL of the Manage server (with no /).
    */
-  public static final String PREF_URL_KEY = "serverurl";
+  public static final String PREF_URL_KEY = "serverUrl";
   
   /**
    * The pref key for the phone number for the Manage server SMS gateway
    */
-  public static final String PREF_SMS_KEY = "serversms";
+  public static final String PREF_SMS_KEY = "serverSms";
   
   /**
    * The pref key for the last recorded IMSI, to check for IMSI changes.
@@ -104,10 +96,28 @@ public class Constants {
    */
   public static final String PREF_TASKS_LAST_DOWNLOADED_KEY = "tasksLastDownloaded";
   
+  //---------------------------- Task Constants --------------------------
+  
+  /**
+   * The number of times a task should be attempted before it fails.
+   */
+  public static final int NUM_TASK_ATTEMPTS = 3; 
+  
+  /**
+   * Default time alotted to a particular worker task being run by the 
+   * ODKManageService worker thread.
+   */
+  public static final int SERVICE_OPERATION_TIMEOUT_MS = 300000;
+  
+  /**
+   * How long to wait when opening network connection in milliseconds
+   */
+  public static final int CONNECTION_TIMEOUT_MS = 5000;
+  
   //---------------------------- SMS Constants ---------------------------
   
   /**
-   * Token required for GAE routing of SMS messages.
+   * Token required for routing of SMS messages.
    */
   public static final String MANAGE_SMS_TOKEN = "odk";
 

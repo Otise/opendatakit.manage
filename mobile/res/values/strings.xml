@@ -16,26 +16,6 @@ the License.
 <resources>
 
 	<string name="app_name">ODK Manage</string>
-
-	<string name="questionview_error">Sorry, you are not in a form yet!</string>
-	<string name="delete_error">Sorry, you have not selected a form!</string>
-	<string name="languages_error">Sorry, this form has no other languages!</string>
-	<string name="sdcard_error">Sorry, you have no SD card!</string>
-	<string name="url_error">Sorry, URL is invalid!</string>
-	<string name="load_error">Sorry, unable to load form %s</string>
-  <string name="directory_error">Sorry, unable to create directory %s</string>  
-
-  <string name="form_deleted_ok">%s successfully deleted!</string>
-  <string name="form_added_ok">%s successfully added!</string>
-	<string name="data_saved_ok">Data successfully saved!</string>
-	<string name="data_saved_error">Sorry, data save failed!</string>
-	
-	<string name="no_answer_error">Sorry, no answer to clear!</string>
-	<string name="readonly_question">This question is read only.</string>
-	<string name="readonly_answer_error">Sorry, answer is read only!</string>
-	<string name="form_deleted_error">Sorry, unable to delete %s</string>
-	<string name="delete_confirm">Are you sure you want to delete %s</string>
-	<string name="entryquit_confirm">Going back now will delete the entered data. Are you sure?</string>
 	
 	<string name="settings">Settings</string>
 
@@ -44,20 +24,27 @@ the License.
 
 	<string name="ok">OK</string>
 	<string name="cancel">Cancel</string>
+  
+  <string name="languages_error">Sorry, this form has no other languages!</string>
+  <string name="sdcard_error">Sorry, you have no SD card!</string>
+  <string name="url_error">Sorry, URL is invalid!</string>
+  <string name="load_error">Sorry, unable to load form %s</string>
+  <string name="directory_error">Sorry, unable to create directory %s</string>  
 
-	<string name="add_form">Add Form</string>
-	<string name="delete_form">Delete Form</string>
-	<string name="delete_repeat">Delete Repeat</string>
-	<string name="clear_answer">Clear Answer</string>
+  <string name="delete_confirm">Are you sure you want to delete %s</string>
+  <string name="entryquit_confirm">Going back now will delete the entered data. Are you sure?</string>
 	<string name="quit_entry">Save and Exit</string>
 	<string name="change_language">Change Language</string>
   
-  <string name="register_phone_http">Register Phone by HTTP</string>
-  <string name="register_phone_sms">Register Phone by SMS</string>
+  <string name="register_phone">Register Phone</string>
+  <string name="sync">Sync</string>
+  
   <string name="server_sms_num">Server SMS Number: </string>
   <string name="server_url">Server URL: </string>
   <string name="user_id">User ID:</string>
   
-  <string name="get_tasks">Get Tasks</string>
+  <string name="notice">Note: This program is for administration only.</string>
+  
+  
 
 </resources>

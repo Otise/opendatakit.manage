@@ -2,6 +2,8 @@ package org.odk.manage.android;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.util.Log;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,30 +17,15 @@ import java.util.Map;
  */
 public class SharedPreferencesAdapter {
   
-  private static Map<String, String> prefDefaults;
-  static {
-    prefDefaults = new HashMap<String, String>();
-    prefDefaults.put(Constants.PREF_URL_KEY, Constants.PREF_URL_DEFAULT);
-    prefDefaults.put(Constants.PREF_SMS_KEY, Constants.PREF_SMS_DEFAULT);
-  }
-  
   private SharedPreferences prefs;
-  
+
   public SharedPreferencesAdapter(Context ctx){
-    prefs = ctx.getSharedPreferences(Constants.PREFS_NAME, 0);
+    prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+    initDefaults();
   }
   
   public String getString(String key, String defValue){
-    String res = prefs.getString(key, null);
-    if (res == null){
-      if (prefDefaults.containsKey(key)){
-        return prefDefaults.get(key);
-      } else {
-        return defValue;
-      }
-    } else {
-      return res;
-    }
+    return prefs.getString(key, defValue);
   }
   
   public boolean setPreference(String key, String value){
@@ -65,6 +52,7 @@ public class SharedPreferencesAdapter {
   public long getLong(String key, long defValue){
     return prefs.getLong(key, defValue);
   }
+  
   public boolean setPreference(String key, long value){
     SharedPreferences.Editor editor = prefs.edit();
     editor.putLong(key, value);
@@ -72,10 +60,28 @@ public class SharedPreferencesAdapter {
   }
   
   /**
-   * Only use this when working with non-string preferences.
    * @return The underlying SharedPreferences object.
    */
   public SharedPreferences getPreferences(){
     return prefs;
   }
+  
+  private void initDefaults() {
+    Log.d(Constants.TAG, "Initializing default SharedPreferences");
+    if (getBoolean(Constants.PREF_GPRS_ENABLED_KEY, true) && !getBoolean(Constants.PREF_GPRS_ENABLED_KEY, false))
+      setPreference(Constants.PREF_GPRS_ENABLED_KEY, Constants.PREF_GPRS_ENABLED_DEFAULT);
+    if (getBoolean(Constants.PREF_SMS_ENABLED_KEY, true) && !getBoolean(Constants.PREF_SMS_ENABLED_KEY, false))
+      setPreference(Constants.PREF_SMS_ENABLED_KEY, Constants.PREF_SMS_ENABLED_DEFAULT);
+    if (getString(Constants.PREF_URL_KEY, null) == null)
+      setPreference(Constants.PREF_URL_KEY, Constants.PREF_URL_DEFAULT);
+    if (getString(Constants.PREF_SMS_KEY, null) == null)
+      setPreference(Constants.PREF_SMS_KEY, Constants.PREF_SMS_DEFAULT);
+  }
+
+//  public void resetDefaults() {
+//    setPreference(Constants.PREF_GPRS_ENABLED_KEY, Constants.PREF_GPRS_ENABLED_DEFAULT);
+//    setPreference(Constants.PREF_SMS_ENABLED_KEY, Constants.PREF_SMS_ENABLED_DEFAULT);
+//    setPreference(Constants.PREF_URL_KEY, Constants.PREF_URL_DEFAULT);
+//    setPreference(Constants.PREF_SMS_KEY, Constants.PREF_SMS_DEFAULT);
+//  }
 }

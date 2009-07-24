@@ -9,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,22 +41,27 @@ public class DeviceRegistrationHandler {
     String registeredImsi = prefsAdapter.getString(Constants.PREF_REGISTERED_IMSI_KEY, null);
     String newImsi = propsAdapter.getIMSI();
     //if the IMSI has changed, then we want to send a registration
-    if ((newImsi==null && registeredImsi==null) || newImsi.equals(registeredImsi)) {
-      return false;
+    if (newImsi==null) {
+      return registeredImsi != null;
+    }
+    else return !newImsi.equals(registeredImsi);
+  }
+  
+  /**
+   * 
+   * @param return Toast If true, a Toast will display with the result of the registration.
+   */
+  public void register(boolean returnToast) {
+    if (propsAdapter.getIMSI() == null || !prefsAdapter.getBoolean(Constants.PREF_SMS_ENABLED_KEY, false)) {
+      registerByHttp(returnToast);
+      return;
     } else {
-      return true;
+      registerBySms(returnToast);
     }
   }
   
-  public void register() {
-    if (propsAdapter.getIMSI() == null || !Constants.SUPPORTS_SMS) {
-      registerByHttp();
-      return;
-    } else {
-      registerBySms();
-    }
-  }
-  public void registerBySms(){
+  public void registerBySms(boolean returnToast){
+    final boolean fReturnToast = returnToast;
     prefsAdapter.setPreference(Constants.PREFS_REG_IN_PROGRESS_KEY, true);
     Map<String,String> regMap = createRegisterMap();
     BroadcastReceiver onSent = new BroadcastReceiver(){
@@ -65,14 +71,20 @@ public class DeviceRegistrationHandler {
         {
           case Activity.RESULT_OK:
             Log.i(Constants.TAG, "Registration sent.");
+            if (fReturnToast){
+              Toast.makeText(ctx, "Registration by SMS was sent.", Toast.LENGTH_LONG).show();
+            }
             // this should really be done in the onDelivered intent, but it is 
-            // to dangerous: if the message keeps failing to be delivered (e.g. 
+            // too dangerous: if the message keeps failing to be delivered (e.g. 
             // bad #), we will waste tons of SMS's.
             prefsAdapter.setPreference(Constants.PREF_REGISTERED_IMSI_KEY, 
             propsAdapter.getIMSI());
             break;
           default:
             Log.e(Constants.TAG, "Registration SMS could not be sent");
+            if (fReturnToast){
+              Toast.makeText(ctx, "Registration by SMS could not be sent.", Toast.LENGTH_LONG).show();
+            }
         }}};
     BroadcastReceiver onDelivered = new BroadcastReceiver(){
       public void onReceive(Context arg0, Intent arg1) {
@@ -82,9 +94,15 @@ public class DeviceRegistrationHandler {
 //                  prefsAdapter.setPreference(Constants.PREF_REGISTERED_IMSI_KEY, 
 //                      propsAdapter.getIMSI());
             Log.i(Constants.TAG, "Registration delivered.");
+            if (fReturnToast){
+              Toast.makeText(ctx, "Registration by SMS was delivered.", Toast.LENGTH_LONG).show();
+            }
             break;
           case Activity.RESULT_CANCELED:
             Log.e(Constants.TAG, "Registration delivery failed.");
+            if (fReturnToast){
+              Toast.makeText(ctx, "Registration by SMS was not delivered.", Toast.LENGTH_LONG).show();
+            }
         }}};
     
     new SmsSender(ctx).sendSMS(
@@ -96,12 +114,19 @@ public class DeviceRegistrationHandler {
 
   }
   
-  public void registerByHttp(){
+  public void registerByHttp(boolean returnToast){
     Map<String,String> regMap = createRegisterMap();
     String url = prefsAdapter.getString(Constants.PREF_URL_KEY, null) + "/" + Constants.REGISTER_PATH;
     // we're not going to update the registered IMSI, because an HTTP registration is not sufficient
     // (it doesn't give the server a # validator)
-    new HttpAdapter().doPost(url, regMap);
+    boolean success = new HttpAdapter().doPost(url, regMap);
+    if (returnToast) {
+      if (success) {
+        Toast.makeText(ctx, "Registration by HTTP was successful.", Toast.LENGTH_LONG).show();
+      } else {
+        Toast.makeText(ctx, "Registration by HTTP was unsuccessful.", Toast.LENGTH_LONG).show();
+      }
+    }
   }
   
   private Map<String,String> createRegisterMap(){

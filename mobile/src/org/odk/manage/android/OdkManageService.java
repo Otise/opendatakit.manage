@@ -194,9 +194,13 @@ public class OdkManageService extends Service{
 
   private boolean isNetworkConnected(){
     NetworkInfo ni = getNetworkInfo();
+    if (ni == null) {
+      return false;
+    }
     ni.getType();
     return (ni != null && NetworkInfo.State.CONNECTED.equals(ni.getState()) && 
-        (Constants.SUPPORTS_GPRS || ni.getType() == ConnectivityManager.TYPE_WIFI)); //if GPRS not supported, do not use it
+        (prefsAdapter.getBoolean(Constants.PREF_GPRS_ENABLED_KEY, false) || 
+            ni.getType() == ConnectivityManager.TYPE_WIFI)); //if GPRS not supported, do not use it
   }
   
   
@@ -205,7 +209,7 @@ public class OdkManageService extends Service{
     DeviceRegistrationHandler drh = new DeviceRegistrationHandler(this);
     if (drh.registrationNeededForImei()){
       Log.i(Constants.TAG, "IMSI changed: Registering device");
-      drh.register();
+      drh.register(false);
     }
   }
   

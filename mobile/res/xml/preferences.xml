@@ -1,0 +1,30 @@
+<PreferenceScreen
+        xmlns:android="http://schemas.android.com/apk/res/android">
+ 
+  <EditTextPreference
+      android:id="@+id/userId"
+      android:key="@string/userid_key"
+      android:title="User ID"/> 
+      
+  <EditTextPreference
+      android:id="@+id/serverUrl"
+      android:key="@string/server_url_key"
+      android:title="Server URL"/> 
+     
+  <CheckBoxPreference
+      android:id="@+id/gprsEnabled"
+      android:key="@string/gprs_enabled_key"
+      android:title="Use GPRS"/>    
+           
+  <CheckBoxPreference
+  	  android:id="@+id/smsEnabled"
+      android:key="@string/sms_enabled_key"
+      android:title="Use SMS"/>
+  
+  <EditTextPreference
+      android:id="@+id/serverSms"
+      android:key="@string/server_sms_key"
+      android:dependency="smsEnabled"
+      android:title="Server SMS Number"/>
+                
+</PreferenceScreen>
