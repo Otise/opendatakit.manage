@@ -1,7 +1,5 @@
 package org.odk.manage.server.sms;
 
-import com.google.appengine.api.sms.Mobile;
-
 import org.odk.manage.server.model.DbAdapter;
 
 import java.io.UnsupportedEncodingException;
@@ -35,11 +33,11 @@ public class RegistrationSmsListener implements SmsListener {
             paramMap.get("imei"),
             // Self-reported phone # is not accurate in many regions
             // paramMap.get("phonenumber"),
-            new Mobile(sender).getNumber(),
+            sender.split(" ")[0],
             paramMap.get("imsi"),
             paramMap.get("sim"),
             paramMap.get("userid"),
-            sender
+            sender 
             );
       } finally {
         if (dba != null)
