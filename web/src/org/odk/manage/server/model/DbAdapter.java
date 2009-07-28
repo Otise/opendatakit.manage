@@ -83,6 +83,7 @@ public class DbAdapter {
   
   public List<Device> getDevices(){
     Query q = pm.newQuery(Device.class);
+    q.setOrdering("userId"); //order by userId
     return (List<Device>) q.execute();
   }
   
