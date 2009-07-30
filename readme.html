@@ -1,0 +1,112 @@
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css" media="screen"/>
+
+</head>
+<body>
+
+<div class="banner">
+  <h1>ODK Manage - Readme</h1>
+</div>
+
+<div class="contents">
+<h2>Overview</h2>
+
+ODK Manage is a tool in the Open Data Kit (ODK) toolset. ODK Manage is designed 
+to track and manage devices throughout an ODK deployment. 
+<p>
+ODK Manage allows a deployment manager to automatically keep track of all the devices 
+in a deployment, including IMEI number, phone number, username, and more, all from 
+a web site hosted on the Google App Engine platform. Devices using ODK Manage 
+automatically register their information with the web server and update it whenever it 
+changes.
+<p>
+ODK Manage also allows managers to schedule maintenance operations on registered 
+devices. These operations include downloading forms to ODK, and installing or 
+updating software on the phone.
+
+<h2>Getting Started</h2>
+
+ODK Manage has two components: the <strong>Manage Client</strong>, which runs 
+on the <a href="http://www.android.com/">Android</a> platform, and the 
+<strong>Manage Server</strong>, which runs on 
+<a href="http://code.google.com/appengine/">Google App Engine</a>.
+
+<h3>Download ODK Manage</h3>
+<div class='box'>
+ODK Manage can be downloaded from the <a href="http://code.google.com/p/open-data-kit/">
+Google Code site</a>. Click on the <strong>Source</strong> tab for access to the SVN repository. 
+You will want to checkout trunk/odk-manage. The <strong>mobile</strong> 
+folder contains the Android client code, and the <strong>web</strong> folder contains the 
+server code for Google App Engine
+</div>
+
+<h3>Setting up the Manage Server</h3>
+<div class='box'>
+<ol>
+<li><a href="http://appengine.google.com">Sign up</a> for an App Engine Account. Create an application to host ODK Manage.</li>
+<li><a href="http://code.google.com/appengine/downloads.html">Download</a> the app engine SDK.</li>
+<li>Edit {odk-manage}/web/war/WEB-INFO/appengine-web.xml, and insert your appengine application name in the 
+<strong>Application</strong> field.</li>
+<li>Open {odk-manage}/web/src/org/odk/manage/server/AdminAccountsConfig.java, and enter the gmail addresses of
+all the people who you want to be able to access the manage admin page. Don't worry; you can add more later!</li>
+<li>In the terminal, go to the folder where you installed the Google App Engine SDK (it will probably be called <strong>google_appengine</strong>). 
+Type <strong>./appcfg.py update {odk-manage}/web</strong>. You will be prompted for your gmail address and 
+password. After entering them, it should successfully install the ODK Manage Server.
+<li>Do a test run to make sure everything's working. Visit the server at <strong>{application-name}.appspot.com</strong>.
+You should be prompted for gmail credentials; you'll need to enter a gmail account that you listed in AdminAccountsConfig! 
+You can also see the status of your application by going to <a href="appengine.google.com">appengine.google.com</a> and 
+clicking on the application. The <strong>Logs</strong> tab is a great way to see what's happening and diagnose any problems.</li>
+<li>You now have an empty ODK Manage server. Next, you'll want to install the ODK Manage client on your Android phone. 
+If you plan to use SMS for your deployment, read <a href="sms">Setting up SMS with ODK Manage</a>.
+</ol>
+</div>
+
+<h3>Setting up the Manage Client</h3>
+<div class='box'>
+If you just want to install a client with all the default settings, you can download and install a compiled 
+APK by pointing your Android browser at the latest Odk Manage Client release on the 
+<a href="http://code.google.com/p/open-data-kit/downloads/list">downloads page</a>.
+You'll have to input the manage server manually in the settings page on your phone.
+<p>
+If you want to customize the client and compile it on your own, follow these instructions:
+
+<ol>
+<li><a href="http://developer.android.com/sdk/1.5_r3/index.html">Download</a> the Android SDK.</li>
+<li><a href="http://developer.android.com/guide/developing/eclipse-adt.html">Download</a> the ADT plugin 
+for Eclipse. If you don't have Eclipse, you can download it <a href="http://www.eclipse.org/">here</a>. You 
+can technically compile/develop Android code without Eclipse, I wouldn't advise it.</li>
+<li>Create a new Android Project in Eclipse, and use Existing Source, pointing Eclipse to 
+{odk-manage}/mobile. In the Eclipse Android Project setup wizard, ou can use any project name 
+and any application name. Use the package name <strong>org.odk.manage.android</strong>, 
+and do not create an Activity.</li>
+<li>In Eclipse, open up {ODK Manage}/src/org.odk.manage.android/Constants.java. At the top of the 
+file, there are some fields that you may want to customize. In particular, you can customize the 
+defaults for what server Manage will connect to, and whether it will use GPRS, SMS, or just Wifi 
+for its communications. Read the <a href="#comm_srategy">Manage communication strategy</a> section 
+for more information on how Manage uses GPRS, SMS, and Wifi.</li>
+<li>Right click on the project, and go to <strong>Run->Android Application</strong>. This should 
+run the application in an emulator or on your phone if its plugged in. You can find the APK at 
+{odk-manage}/mobile/bin/***.apk. You can post this APK online and point Android browser at it 
+to download it. If you want to install an APK on a non-development phone, you will need to 
+<a href="http://developer.android.com/guide/publishing/app-signing.html">sign the application</a></li>.
+</div>
+
+
+<h2>Using ODK Manage</h2>
+
+
+<h2>Customizing ODK Manage</h2>
+
+<h2>Details</h2>
+
+<a name="sms" />
+<h3>Using SMS with ODK Manage</h3>
+
+
+<a name="comm_strategy" />
+<h3>ODK Manage communication strategy</h3>
+
+</div>
+</body>
+</html>
