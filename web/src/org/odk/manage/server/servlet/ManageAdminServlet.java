@@ -96,8 +96,8 @@ public class ManageAdminServlet extends HttpServlet {
       out.write("Perform Action: ");
       out.write("<select name='actionType' id='actionTypeSel' onchange='updateActionType()'>");
       out.write("<option value='' selected='true'></option>");
-      out.write("<option value='ADD_FORM'>Add Form</option>");
-      out.write("<option value='INSTALL_PACKAGE'>Install Package</option>");
+      out.write("<option value='ADD_FORM'>Task: Add Form</option>");
+      out.write("<option value='INSTALL_PACKAGE'>Task: Install Package</option>");
       out.write("<option value='NEW_TASKS_SMS'>Send New Tasks Notification SMS</option>");
       out.write("<option value='SEND_SMS'>Send SMS Message</option>");
       out.write("</select>");
