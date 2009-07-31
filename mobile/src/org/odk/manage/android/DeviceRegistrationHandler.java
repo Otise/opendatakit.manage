@@ -1,15 +1,14 @@
 package org.odk.manage.android;
 
-import org.odk.manage.android.comm.CommunicationProtocol;
-import org.odk.manage.android.comm.HttpAdapter;
-import org.odk.manage.android.comm.SmsSender;
-
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
+
+import org.odk.manage.android.comm.HttpAdapter;
+import org.odk.manage.android.comm.SmsSender;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +18,8 @@ public class DeviceRegistrationHandler {
   private Context ctx;
   private PhonePropertiesAdapter propsAdapter;
   private SharedPreferencesAdapter prefsAdapter;
+  
+  private static final String NO_IMSI = "-1";
   
   public DeviceRegistrationHandler(Context ctx){
     this.ctx = ctx;
@@ -40,11 +41,15 @@ public class DeviceRegistrationHandler {
     }
     String registeredImsi = prefsAdapter.getString(Constants.PREF_REGISTERED_IMSI_KEY, null);
     String newImsi = propsAdapter.getIMSI();
-    //if the IMSI has changed, then we want to send a registration
-    if (newImsi==null) {
-      return registeredImsi != null;
+    //if we have never registered, or the IMSI has changed, 
+    // then we want to send a registration
+    if (registeredImsi == null) {
+      return true;
+    } else if (newImsi == null) {
+      return registeredImsi.equals(NO_IMSI);
+    } else{
+      return !registeredImsi.equals(newImsi);
     }
-    else return !newImsi.equals(registeredImsi);
   }
   
   /**
@@ -74,11 +79,8 @@ public class DeviceRegistrationHandler {
             if (fReturnToast){
               Toast.makeText(ctx, "Registration by SMS was sent.", Toast.LENGTH_LONG).show();
             }
-            // this should really be done in the onDelivered intent, but it is 
-            // too dangerous: if the message keeps failing to be delivered (e.g. 
-            // bad #), we will waste tons of SMS's.
             prefsAdapter.setPreference(Constants.PREF_REGISTERED_IMSI_KEY, 
-            propsAdapter.getIMSI());
+            propsAdapter.getIMSI()==null?NO_IMSI:propsAdapter.getIMSI());
             break;
           default:
             Log.e(Constants.TAG, "Registration SMS could not be sent");
@@ -91,8 +93,8 @@ public class DeviceRegistrationHandler {
         switch (getResultCode())
         {
           case Activity.RESULT_OK:
-//                  prefsAdapter.setPreference(Constants.PREF_REGISTERED_IMSI_KEY, 
-//                      propsAdapter.getIMSI());
+            prefsAdapter.setPreference(Constants.PREF_REGISTERED_IMSI_KEY, 
+                propsAdapter.getIMSI()==null?NO_IMSI:propsAdapter.getIMSI());
             Log.i(Constants.TAG, "Registration delivered.");
             if (fReturnToast){
               Toast.makeText(ctx, "Registration by SMS was delivered.", Toast.LENGTH_LONG).show();
@@ -124,7 +126,8 @@ public class DeviceRegistrationHandler {
       if (success) {
         Toast.makeText(ctx, "Registration by HTTP was successful.", Toast.LENGTH_LONG).show();
       } else {
-        Toast.makeText(ctx, "Registration by HTTP was unsuccessful.", Toast.LENGTH_LONG).show();
+        Toast.makeText(ctx, "Registration by HTTP was unsuccessful. " +
+            "Try connecting to wifi or entering data range.", Toast.LENGTH_LONG).show();
       }
     }
   }
