@@ -58,7 +58,8 @@ public class SmsSender {
 
     
     SmsManager sms = SmsManager.getDefault();
-    String fullMessage =  Constants.MANAGE_SMS_TOKEN + " " + message;
+    String fullMessage =  
+      (Constants.MANAGE_SMS_TOKEN==null?"":Constants.MANAGE_SMS_TOKEN) + " " + message;
     
     sms.sendTextMessage(phoneNumber, null, fullMessage, sentPI, deliveredPI); 
     Log.i("OdkManage", "Sms sent: Recipient: " + phoneNumber + "; Message: " + fullMessage);

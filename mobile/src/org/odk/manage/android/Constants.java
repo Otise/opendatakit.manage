@@ -33,8 +33,14 @@ public class Constants {
   /**
    * The default SMS number of the Manage server.
    */ 
-  public static final String PREF_SMS_DEFAULT = ""; //"48378";
+  public static final String PREF_SMS_DEFAULT = "";
   
+  /**
+   * If you are using SMS and this token is non-null, it will be included 
+   * at the beginning of any sent SMS messages. This is necessary for some 
+   * SMS routing protocols.
+   */
+  public static final String MANAGE_SMS_TOKEN = "odk";
   
   //--------------------------------------------------------------------
   //                          Constants
@@ -115,11 +121,6 @@ public class Constants {
   public static final int CONNECTION_TIMEOUT_MS = 5000;
   
   //---------------------------- SMS Constants ---------------------------
-  
-  /**
-   * Token required for routing of SMS messages.
-   */
-  public static final String MANAGE_SMS_TOKEN = "odk";
 
   /**
    * Token signaling that an SMS to the Manage server is a register action.
