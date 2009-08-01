@@ -1,7 +1,58 @@
 <html>
 <head>
 <link rel="stylesheet" href="style.css" type="text/css" media="screen"/>
+<style type="text/css">
+.banner
+{
+    background: #EDF3FE;
+    border-bottom: 1px solid #ccc;
+    padding: 1em 2em 0.5em 2em;
+}
 
+.banner h1
+{
+    font-size: 24pt;
+    margin: 0;
+}
+
+h2
+{
+    font-size: 18pt;
+}
+
+h3
+{
+    font-size: 14pt;
+    font-style: italic;
+}
+
+.contents
+{
+  padding: 1em 2em 0.5em 2em;
+}
+
+.contents .box
+{
+  padding: 0.5em;
+  border: #ffe0bb dotted 1px;
+  background: #fffde8;
+}
+
+a {
+  color: #00F;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #333;
+  background: #FE8;
+}
+
+li {
+  padding: 5px;
+}
+
+</style>
 </head>
 <body>
 
@@ -55,22 +106,30 @@ Type <strong>./appcfg.py update {odk-manage}/web</strong>. You will be prompted 
 password. After entering them, it should successfully install the ODK Manage Server.
 <li>Do a test run to make sure everything's working. Visit the server at <strong>{application-name}.appspot.com</strong>.
 You should be prompted for gmail credentials; you'll need to enter a gmail account that you listed in AdminAccountsConfig! 
-You can also see the status of your application by going to <a href="appengine.google.com">appengine.google.com</a> and 
+You can also see the status of your application by going to <a href="http://appengine.google.com">http://appengine.google.com</a> and 
 clicking on the application. The <strong>Logs</strong> tab is a great way to see what's happening and diagnose any problems.</li>
 <li>You now have an empty ODK Manage server. Next, you'll want to install the ODK Manage client on your Android phone. 
-If you plan to use SMS for your deployment, read <a href="sms">Setting up SMS with ODK Manage</a>.
+If you plan to use SMS for your deployment, read <a href="#sms">Setting up SMS with ODK Manage</a>.
 </ol>
 </div>
 
 <h3>Setting up the Manage Client</h3>
-<div class='box'>
+
+
 If you just want to install a client with all the default settings, you can download and install a compiled 
 APK by pointing your Android browser at the latest Odk Manage Client release on the 
 <a href="http://code.google.com/p/open-data-kit/downloads/list">downloads page</a>.
-You'll have to input the manage server manually in the settings page on your phone.
+<div class="box">
+<ol>
+<li>Open the web browser on your android phone. Go to http://code.google.com/p/open-data-kit/downloads/list.</li>
+<li>Click on the version of OdkManageClient_xxx.apk that you want.</li>
+<li>In the applications folder, click on ODK Manage, go to settings, and configure them.</li>
+</ol>
+</div>
+
 <p>
 If you want to customize the client and compile it on your own, follow these instructions:
-
+<div class='box'>
 <ol>
 <li><a href="http://developer.android.com/sdk/1.5_r3/index.html">Download</a> the Android SDK.</li>
 <li><a href="http://developer.android.com/guide/developing/eclipse-adt.html">Download</a> the ADT plugin 
@@ -83,13 +142,14 @@ and do not create an Activity.</li>
 <li>In Eclipse, open up {ODK Manage}/src/org.odk.manage.android/Constants.java. At the top of the 
 file, there are some fields that you may want to customize. In particular, you can customize the 
 defaults for what server Manage will connect to, and whether it will use GPRS, SMS, or just Wifi 
-for its communications. Read the <a href="#comm_srategy">Manage communication strategy</a> section 
+for its communications. Read the <a href="#comm_strategy">Manage communication strategy</a> section 
 for more information on how Manage uses GPRS, SMS, and Wifi.</li>
 <li>Right click on the project, and go to <strong>Run->Android Application</strong>. This should 
 run the application in an emulator or on your phone if its plugged in. You can find the APK at 
 {odk-manage}/mobile/bin/***.apk. You can post this APK online and point Android browser at it 
 to download it. If you want to install an APK on a non-development phone, you will need to 
-<a href="http://developer.android.com/guide/publishing/app-signing.html">sign the application</a></li>.
+<a href="http://developer.android.com/guide/publishing/app-signing.html">sign the application</a>.</li>
+</ol>
 </div>
 
 
@@ -106,21 +166,137 @@ Once Manage is installed, your phone should automatically register itself with t
 server when it is connected to the internet, but you can speed up the process by clicking 
 on "Register Phone".
 
-<h3>Using the Manage admin web page</h3>
+<h3>The Manage admin web page</h3>
+
+The manage admin page is located at the root of your appengine instance (e.g. manage1.appspot.com).
+<p/>
+When you get to the admin page, you will be asked to sign in. If your gmail account is not 
+in the account list in AdminAccountConfig.java, you will not be able to access Manage. We 
+need to be careful about security, because Manage admins have a lot of power over their 
+deployed phones (e.g. they can install any program on any phone).
+<p/>
+Once you are on the admin page, you should see a table with all of your deployment's registered 
+devices in it. If no devices are registered, the table will be empty. Each row in the table will 
+have several different columns:
+<div class='box'>
+<ul>
+  <li><strong>IMEI:</strong> The IMEI of the device.</li>
+  <li><strong>User ID:</strong> The User ID entered on the settings page of the ODK Manage client.</li>
+  <li><strong>Phone #:</strong> The phone number of the devices; blank if the SIM card is not installed.</li>
+  <li><strong>Tasks:</strong> The number of <a href="#tasks">tasks</a> of each type (yellow=pending, green=success, red=failed) for this device.</li>
+  <li><strong>View Tasks:</strong> Click here to view the tasks for this phone and delete tasks..</li>
+  <li><strong>SMS:</strong> If this field says <strong>Yes</strong>, then you can send SMS to this device.</li>
+  <li><strong>Last Contacted:</strong> The last time this device checked in with the server, either by registering, asking for new tasks, or giving a status update.</li>
+</ul>
+</div>
+
+If a device has pending tasks, that device will appear yellow. If a device has failed tasks, that 
+device will appear red. You can remove pending or failed tasks from a device by clicking <strong>
+View Tasks</strong> for that device.
+
+<a name="tasks"></a>
+<h3>Actions/Tasks</h3>
+
+At the top of the admin console there is a <strong>Perform Action</strong> box. 
+The items in this drop-down menu are actions you can perform on phones. To perform an 
+action, select the  action you want to perform from the menu, and fill in the required 
+fields. You also need to select which devices you want to perform the action on, by 
+checking their checkboxes.
+<p/>
+Some actions are <strong>Task</strong> actions; that is, they schedule a particular 
+task to be executed on the selected devices. 
+<p/>
+The following tasks are available in the current version of ODK Manage:
+<div class="box">
+<ul>
+<li><strong>Add Form:</strong> Add a form to ODK Collect's form list on the phone.</li>
+You need to provide the URL where the form is located on the web. This must be entered 
+in standardized format, e.g. <i>http://www.example.com/forms/myForm.xml</i>. 
+<p/>
+If you are using <i>ODK Aggregate</i> to store your forms, just enter the 
+URL of your aggregate application (e.g. http://aggregate.appspot.com), and you will 
+be able to choose from a list of Aggregate's forms when you choose <strong>Add Form</strong>.
+<li><strong>Install Package:</strong> Install or re-install a software package (e.g. ODK Collect) 
+on the devices.</li>
+This task makes it easy to push software updates or new software to deployed phones. 
+You can even send new versions of ODK Manage. 
+<p/>
+You need to be very careful in how you fill out the fields for an Install Package task. 
+Under package URL, enter the URL where the package APK file is located in standardized format, e.g. 
+<i>http://www.example.com/apk/OdkCollect.apk</i>.
+Under package name, <i>you must enter the actual package name (not file name) for the 
+apk you are installing</i>. For example, ODK Collect has the package name <i>org.odk.collect.android</i>.
+If you don't set the package name correctly, Manage will not be able to detect when the 
+package is installed. The easiest way to find the package name for a package is to look at 
+AndroidManifest.xml in the source code, and look for something like 
+&lt;manifest package="org.odk.manage.android"&gt; right at the top. If you don't have the source 
+code, it is pretty tricky: one option is to install the package on a phone and use <strong>adb logcat</strong>
+ to find out the package name when it's added. We are looking for ways to simplify this process.
+</ul>
+</div>
+
+There are also other actions you can perform in the actions panel that do not schedule tasks.
+The actions provided by the current version are: 
+
+<div class="box">
+<ul>
+<li><strong>Send New Task Notification SMS:</strong> Sends an SMS message to the selected phones 
+with a special keyword that notifies the Manage client that there are new tasks on the server.</li>
+This prompts the client to connect to the server and download the task list. The SMS can also 
+contain a message (e.g. 'enter data range as soon as possible'). This is helpful in configurations 
+where the client is configured to check in with the server on a very infrequent basis, or never.
+<p/>
+<strong>Note:</strong> You can only perform this action if the Manage server is configured 
+to use SMS - if the <i>SMS</i> column for your devices say Yes, then you're good to go.
+<li><strong>Send SMS Message:</strong> Sends an SMS with your message to the selected devices.</li> 
+<strong>Note:</strong> You can only perform this action if the Manage server is configured 
+to use SMS - if the <i>SMS</i> column for your devices say Yes, then you're good to go.
+</ul>
+</div>
+
+It is possible to develop new actions or tasks for ODK Manage. See the 
+<a href="#customize_actions_tasks">Customizing Actions or Tasks</a> section.
 
 <h3>How/when tasks will be executed on the phone</h3>
 
+There are various triggers that cause the ODK Manage service to download new 
+tasks from the server and/or attempt to execute the tasks it has already downloaded.
+<p/>
+If one of the following triggers occurs:
+<div class="box">
+<ul>
+<li><strong>Timer: </strong>It's been longer than 
+<i>org.odk.manage.android.Constants.TASK_REQUEST_PERIOD_MS</i> since the phone last 
+checked in.</li>
+<li><strong>New Tasks Notification SMS: </strong>A new tasks notification SMS 
+is sent from the server (i.e. an SMS from the server starting with ODK-MANAGE-NT).</li>
+<li><strong>Manual Sync: </strong>The user opens the ODK Manage application and 
+presses <i>Sync</i>.</li>
+</ul>
+</div>
+
+then ODK Manage will attempt to download the new tasks list. If there is no connectivity, 
+ODK Manage will wait until connectivity is available and then download the new tasks list.
+<p/>
+When ODK Manage downloads new tasks, it immediately tries to execute them. If it cannot 
+execute them (e.g. no internet connection, user cancels install, etc.), Manage will try 
+again intermittently or when connectivity changes. If a task fails three times, it's status 
+will be changed to FAILED, and it will not be attempted any additional times.
+
 <h2>Customizing ODK Manage</h2>
 
+<a name="customize_actions_tasks"></a>
+<h3>Adding new Actions or Tasks</h3>
+TODO
 <h3>Creating a new task type</h3>
 
 <h2>Details</h2>
 
-<a name="sms" />
+<a name="sms"></a>
 <h3>Using SMS with ODK Manage</h3>
 
 
-<a name="comm_strategy" />
+<a name="comm_strategy"></a>
 <h3>ODK Manage communication strategy</h3>
 
 </div>
