@@ -7,7 +7,7 @@ import org.odk.manage.server.model.Device;
  * @author alerer@google.com (Adam Lerer)
  *
  */
-public interface SmsAdapter {
+public interface SmsService {
 
   /**
    * Register an SmsListener that will be notified when SMS's are received.
@@ -24,5 +24,12 @@ public interface SmsAdapter {
    * @return true if the message was successfully sent.
    */
   public boolean sendSms(Device device, String content); 
+  
+  /**
+   * 
+   * @param device
+   * @return True if the SMS service can send to this device.
+   */
+  public boolean canSendTo(Device device);
   
 }

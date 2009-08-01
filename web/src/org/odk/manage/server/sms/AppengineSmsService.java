@@ -18,28 +18,29 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * Servlet located at '/_ah/messages'
+ * 
+ * This is an SMS service implementation for using Google SMS servers.
+ * Note: this is NOT an appengine API - external users will need to use a 
+ * service like Clickatell and builder an SmsService implementation for it.
  * @author alerer@google.com (Adam Lerer)
  *
  */
-public class AppengineSmsAdapter extends HttpServlet implements SmsAdapter {
+public class AppengineSmsService implements SmsService {
 
-  List<SmsListener> listeners = new LinkedList<SmsListener>();
-  private static final Logger log = Logger.getLogger(AppengineSmsAdapter.class.getName());
+  private static final Logger log = Logger.getLogger(AppengineSmsService.class.getName());
   
+  List<SmsListener> listeners = new LinkedList<SmsListener>();
+  
+  @Override
   public boolean sendSms(Device device, String content) {
     try{
       SmsServiceFactory.getSmsService().sendToMobile(
-          new Mobile(device.getNumberWithValidator()), content);
+          new Mobile(device.getSmsValidator()), content);
       return true;
     } catch(Exception e){
-      debug("Exception sending SMS message: " + e.getStackTrace());
+      debug("Exception sending SMS message: " + e.getStackTrace().toString());
       return false;
     }
-  }
-  
-  public boolean sendNewTaskNotification(Device device, String message) {
-    String content = Constants.NEW_TASKS_TRIGGER + ": " + message;
-    return sendSms(device, content);  
   }
 
   @Override
@@ -51,24 +52,19 @@ public class AppengineSmsAdapter extends HttpServlet implements SmsAdapter {
   public boolean unregisterSmsListener(SmsListener listener) {
     return listeners.remove(listener);
   }
-
-  @Override
-  public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-    String sender = req.getParameter("sender");
-    String content = req.getParameter("content").trim();
-    
-    if (sender == null || content == null){
-      resp.sendError(400);
-      return; // should not happen
-    }
-    debug("\nSender: '" + sender + "'\nContent: '" + content + "'");
-    
-    for (SmsListener l: listeners) {
-      l.onSmsReceived(sender, content);
-    }
-  }
   
   private void debug(String msg){
     log.log(Level.WARNING, msg);
+  }
+
+  @Override
+  public boolean canSendTo(Device device) {
+    return device.getSmsValidator() != null;
+  }
+  
+  public void smsReceived(String sender, String content){
+    for (SmsListener l: listeners) {
+      l.onSmsReceived(sender.split(" ")[0], sender, content);
+    }
   }
 }

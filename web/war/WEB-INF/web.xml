@@ -42,16 +42,6 @@
   </servlet-mapping>
   
   <servlet>
-    <servlet-name>appengineSmsAdapter</servlet-name>
-    <servlet-class>org.odk.manage.server.sms.AppengineSmsAdapter</servlet-class>
-  </servlet>
-  
-  <servlet-mapping>
-    <servlet-name>appengineSmsAdapter</servlet-name>
-    <url-pattern>/_ah/sms/message/</url-pattern>
-  </servlet-mapping>
-  
-  <servlet>
     <servlet-name>adminServlet</servlet-name>
     <servlet-class>org.odk.manage.server.servlet.ManageAdminServlet</servlet-class>
   </servlet>
@@ -100,5 +90,16 @@
     <servlet-name>deleteTasksServlet</servlet-name>
     <url-pattern>/deleteTasks</url-pattern>
   </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>appengineSmsReceiverServlet</servlet-name>
+    <servlet-class>org.odk.manage.server.servlet.AppengineSmsReceiverServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>appengineSmsReceiverServlet</servlet-name>
+    <url-pattern>/_ah/sms/message/</url-pattern>
+  </servlet-mapping>
+  
 
 </web-app>

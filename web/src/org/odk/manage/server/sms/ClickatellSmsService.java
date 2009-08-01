@@ -15,10 +15,10 @@ import java.util.logging.Logger;
  * @author alerer@google.com (Adam Lerer)
  *
  */
-public class ClickatellSmsAdapter implements SmsAdapter{
+public class ClickatellSmsService implements SmsService{
 
   List<SmsListener> listeners = new LinkedList<SmsListener>();
-  private static final Logger log = Logger.getLogger(ClickatellSmsAdapter.class.getName());
+  private static final Logger log = Logger.getLogger(ClickatellSmsService.class.getName());
   
   public boolean sendSms(Device device, String content) {
     return false;
@@ -36,6 +36,12 @@ public class ClickatellSmsAdapter implements SmsAdapter{
   
   private void debug(String msg){
     log.log(Level.WARNING, msg);
+  }
+
+  @Override
+  public boolean canSendTo(Device device) {
+    // TODO Auto-generated method stub
+    return false;
   }
 
 }

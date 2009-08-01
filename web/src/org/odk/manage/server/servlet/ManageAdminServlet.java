@@ -131,7 +131,10 @@ public class ManageAdminServlet extends HttpServlet {
       out.write("<tr><td>Package URL: </td><td><input type='text' name='INSTALL_PACKAGE.url'/></td></table>");
       out.write("</div>");
       
-      out.write("<div class='actionInputs'id='NEW_TASKS_SMS_INPUTS'></div>");
+      out.write("<div class='actionInputs'id='NEW_TASKS_SMS_INPUTS'>");
+      out.write("Message: <br/><textarea name='NEW_TASKS_SMS.content' cols='35' rows='4'></textarea>");
+      out.write("<br/>Note: Messages can be no longer than 120 characters.");
+      out.write("</div>");
       
       out.write("<div class='actionInputs' id='SEND_SMS_INPUTS' >");
       out.write("Message: <br/><textarea name='SEND_SMS.content' cols='35' rows='4'></textarea>");
@@ -179,7 +182,7 @@ public class ManageAdminServlet extends HttpServlet {
         out.write("</td>");
         
         // Send notification SMS TD
-        if (device.getNumberWithValidator()!=null) {
+        if (device.getSmsValidator()!=null) {
           out.write("<td status=SUCCESS>Yes</td>");
         } else {
           out.write("<td></td>");

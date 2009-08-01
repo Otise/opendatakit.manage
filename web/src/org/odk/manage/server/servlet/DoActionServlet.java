@@ -7,8 +7,8 @@ import org.odk.manage.server.model.Device;
 import org.odk.manage.server.model.Task;
 import org.odk.manage.server.model.Task.TaskStatus;
 import org.odk.manage.server.model.Task.TaskType;
-import org.odk.manage.server.sms.SmsAdapter;
-import org.odk.manage.server.sms.SmsAdapterFactory;
+import org.odk.manage.server.sms.SmsService;
+import org.odk.manage.server.sms.SmsServiceFactory;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -23,7 +23,7 @@ public class DoActionServlet extends HttpServlet {
   private static final Logger log = Logger.getLogger(DoActionServlet.class.getName());
   
   private DbAdapter dba = null;
-  SmsAdapter smsAdapter = SmsAdapterFactory.getAdapter();
+  SmsService smsService = SmsServiceFactory.getService();
   
   @Override
   public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -92,7 +92,11 @@ public class DoActionServlet extends HttpServlet {
           addTask(device, tasktype, TaskStatus.PENDING, name, url, extras);
           numSuccess++;
         } else if (type.equals("NEW_TASKS_SMS")) {
-          if (smsAdapter.sendSms(device, Constants.NEW_TASKS_TRIGGER + ": " + Constants.NEW_TASKS_CONTENT)) {
+          String content = req.getParameter("NEW_TASKS_SMS.content");
+          if (content.length() > 120) {
+            redirectMain(resp, "Message is more than 120 characters.", false);
+          }
+          if (smsService.sendSms(device, Constants.NEW_TASKS_TRIGGER + ": " + content)) {
             numSuccess++;
           }
         } else if (type.equals("SEND_SMS")) {
@@ -103,7 +107,7 @@ public class DoActionServlet extends HttpServlet {
           if (content.length() > 140) {
             redirectMain(resp, "Message is more than 140 characters.", false);
           }
-          if (smsAdapter.sendSms(device, content)) {
+          if (smsService.sendSms(device, content)) {
             numSuccess++;
           }
         } else {

@@ -15,11 +15,11 @@ import java.util.logging.Logger;
  *
  */
 public class RegistrationSmsListener implements SmsListener {
-
+  
   private static final Logger log = Logger.getLogger(RegistrationSmsListener.class.getName());
   
   @Override
-  public void onSmsReceived(String sender, String content) {
+  public void onSmsReceived(String sender, String smsValidator, String content) {
     String action = content.split(" ")[0];
     String data = content.substring(action.length() + 1);
     
@@ -33,11 +33,11 @@ public class RegistrationSmsListener implements SmsListener {
             paramMap.get("imei"),
             // Self-reported phone # is not accurate in many regions
             // paramMap.get("phonenumber"),
-            sender.split(" ")[0],
+            sender,
             paramMap.get("imsi"),
             paramMap.get("sim"),
             paramMap.get("userid"),
-            sender 
+            smsValidator 
             );
       } finally {
         if (dba != null)
