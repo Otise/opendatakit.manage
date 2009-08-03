@@ -17,6 +17,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * This servlet provides a human-readable list of tasks for a particular device. 
+ * The admin can delete tasks from this page.
+ * @author alerer@google.com (Adam Lerer)
+ *
+ */
 public class ViewTasksServlet extends HttpServlet {
 
   private static final Logger log = Logger.getLogger(ViewTasksServlet.class.getName());

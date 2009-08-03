@@ -24,7 +24,11 @@ import javax.jdo.annotations.PrimaryKey;
 
 /**
  * 
- *
+ * Datastore model for storing a 'Device Group', a predefined group of devices 
+ * (e.g. supervisor devices). 
+ * 
+ * Not yet implemented. 
+ * 
  * @author alerer@google.com (Adam Lerer)
  */
 @PersistenceCapable(identityType = IdentityType.APPLICATION)

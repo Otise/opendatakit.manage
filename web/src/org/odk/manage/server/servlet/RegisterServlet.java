@@ -10,37 +10,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * This servlet handles
- * @author alerer@google.com (Your Name Here)
+ * This servlet is accessed by the client to register itself with the server.
+ * @author alerer@google.com (Adam Lerer)
  *
  */
 public class RegisterServlet extends HttpServlet {
 
   private static final Logger log = Logger.getLogger(RegisterServlet.class.getName());
-  
-//  @Override
-//  /**
-//   * Debugging method.
-//   */
-//  public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-//    // debug code
-//    dba.registerDevice(
-//        "imei", 
-//        "phonenumber", 
-//        "imsi", 
-//        "sim",
-//        "userId",
-//        null);
-//    PersistenceManager pm = PMF.get().getPersistenceManager();
-//    Extent<Device> extent = pm.getExtent(Device.class, false);
-//    for (Device d : extent) {
-//      if (d.imei != null)
-//        resp.getWriter().write(d.imei);
-//      resp.getWriter().write(" (IMEI) \n");
-//    }
-//    extent.closeAll();
-//    pm.close();
-//  }
   
   @Override
   public void doPost(HttpServletRequest req, HttpServletResponse resp) {

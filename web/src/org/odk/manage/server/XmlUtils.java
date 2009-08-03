@@ -24,13 +24,22 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-
-
+/**
+ * Static utilities for XML processing.
+ * @author alerer@google.com (Adam Lerer)
+ *
+ */
 public class XmlUtils {
 
   private static final Logger log = Logger.getLogger(XmlUtils.class.getName());
   
-  // we're using DOM for now - memory-intensive, but OK for these uses
+  /**
+   * Creates an XML {@link Document} with the provided root element tag.
+   * We're using DOM for now - memory-intensive, but OK for these uses
+   * @param ns The namespace URI of the document element to create, or null for none.
+   * @param rootElement The name of the XML root element tag.
+   * @return An XML {@link Document}.
+   */
   public static Document createXmlDoc(String ns, String rootElement){
     // Create XML DOM document (Memory consuming).
     org.w3c.dom.Document xmldoc = null;
@@ -47,6 +56,11 @@ public class XmlUtils {
     return impl.createDocument(ns, rootElement, null);
   }
   
+  /**
+   * Serialize XML from a {@link Document} to an OutputStream.
+   * @param doc
+   * @param out
+   */
   public static void serialiseXml(Document doc, Writer out){
     DOMSource domSource = new DOMSource(doc.getDocumentElement());
     StreamResult streamResult = new StreamResult(out);
@@ -65,6 +79,12 @@ public class XmlUtils {
     }
   }
   
+  /**
+   * Produces a {@link Document} from a valid {@InputStream}. Parsing errors 
+   * are not propagated; they are logged, and a null Document is returned.
+   * @param is The input stream.
+   * @return A {@link Document} for the input stream, or null if invalid.
+   */
   public static Document getXmlDocument(InputStream is){
     Document doc = null;
     try{
@@ -84,6 +104,13 @@ public class XmlUtils {
     return doc;
   }
   
+  /**
+   * Given a {@link NamedNodeMap} of XML attributes, returns the value for 
+   * a particular attribute, or null if no attribute exists with this name.
+   * @param attributes The attribute list.
+   * @param name The name of the attribute.
+   * @return The value of that attribute name, or null if no such attribute exists.
+   */
   public static String getAttribute(NamedNodeMap attributes, String name) {
     if (attributes.getNamedItem(name) == null) {
       return null;

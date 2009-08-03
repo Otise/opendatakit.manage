@@ -93,7 +93,7 @@
   
   <servlet>
     <servlet-name>appengineSmsReceiverServlet</servlet-name>
-    <servlet-class>org.odk.manage.server.servlet.AppengineSmsReceiverServlet</servlet-class>
+    <servlet-class>org.odk.manage.server.sms.AppengineSmsService.AppengineSmsReceiverServlet</servlet-class>
   </servlet>
   
   <servlet-mapping>

@@ -6,7 +6,7 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 /**
- * Stores persistent application preferences. 
+ * Stores persistent application preferences as key-value pairs.
  * @author alerer@google.com (Adam Lerer)
  *
  */
@@ -19,6 +19,11 @@ public class Preference {
   @Persistent
   private String value;
   
+  /**
+   * A new preference (key value pair).
+   * @param name
+   * @param value
+   */
   public Preference (String name, String value){
     this.name = name;
     this.value = value;

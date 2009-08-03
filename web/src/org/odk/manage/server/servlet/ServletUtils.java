@@ -1,5 +1,10 @@
 package org.odk.manage.server.servlet;
 
+/**
+ * Static utilities class for servlets.
+ * @author alerer@google.com (Adam Lerer)
+ *
+ */
 public class ServletUtils {
   public static String removeNull(String s){
     if (s == null)

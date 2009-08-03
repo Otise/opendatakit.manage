@@ -13,6 +13,11 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * This class contains static methods for handling user authentication.
+ * @author alerer@google.com (Adam Lerer)
+ *
+ */
 public class AdminAccountsConfig {
   
   private static final Logger log = Logger.getLogger(AdminAccountsConfig.class.getName());
@@ -32,7 +37,7 @@ public class AdminAccountsConfig {
    * For testing, we are adding a token that allows you to bypass admin checks.
    * This should be removed in production.
    */
-  private static final String adminToken = "ureport";
+  private static final String adminToken = null;
   
   private static Set<String> adminAccountsHash;
   static {
@@ -40,6 +45,11 @@ public class AdminAccountsConfig {
     Collections.addAll(adminAccountsHash, adminAccounts);
   }
   
+  /**
+   * 
+   * @param email
+   * @return true if email corresponds to an admin.
+   */
   public static boolean isAdmin(String email) {
     return adminAccountsHash.contains(email);
   }
@@ -55,9 +65,9 @@ public class AdminAccountsConfig {
    *  return;
    * }
    * 
-   * @param req
-   * @param resp
-   * @return
+   * @param req The servlet HttpRequest.
+   * @param resp The servlet HttpResponse.
+   * @return true if the user is authenticated.
    */
   public static boolean authenticateAdmin(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     UserService userService = UserServiceFactory.getUserService();
@@ -84,11 +94,11 @@ public class AdminAccountsConfig {
     }
   }
   
-  public static boolean authenticateAdmin(HttpServletRequest req){
-    UserService userService = UserServiceFactory.getUserService();
-    
-    String thisURL = req.getRequestURI();
-    return (req.getUserPrincipal() != null && 
-        isAdmin(req.getUserPrincipal().getName()));
-  }
+//  public static boolean authenticateAdmin(HttpServletRequest req){
+//    UserService userService = UserServiceFactory.getUserService();
+//    
+//    String thisURL = req.getRequestURI();
+//    return (req.getUserPrincipal() != null && 
+//        isAdmin(req.getUserPrincipal().getName()));
+//  }
 }

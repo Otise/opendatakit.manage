@@ -27,13 +27,17 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 /**
- * 
+ * A data object storing data about a particular device (i.e. phone).
  *
  * @author alerer@google.com (Adam Lerer)
  */
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class Device {
   
+  /**
+   * Create a new device.
+   * @param imei The device IMEI.
+   */
   public Device(String imei){
     this.key = "i" + imei;
     this.imei = imei;
@@ -57,7 +61,7 @@ public class Device {
   private String phoneNumber;
   
   @Persistent
-  private String numberWithValidator;
+  private String smsValidator;
   
   @Persistent
   private Date lastContacted;
@@ -78,8 +82,47 @@ public class Device {
   private List<Task> tasks;
   
   /**
+   * These are an optimization for the datastore.
+   */
+  @Persistent
+  private int numPending;
+  @Persistent
+  private int numSuccess;
+  @Persistent
+  private int numFailed;
+  
+  /**
+   * Called by Device and Task.<br>
+   * WARNING: Do not call this method unless you know what you are doing; calling 
+   * this method improperly can break model invariants.
+   * @param status The TaskStatus to modify.
+   * @param inc The amount to increment the task count for that status. May be negative.
+   */
+  protected void incTaskCount(TaskStatus status, int inc){
+        switch(status){
+          case PENDING:
+            numPending += inc;
+            break;
+          case SUCCESS:
+            numSuccess += inc;
+            break;
+          case FAILED:
+            numFailed += inc;
+            break;
+        }
+  }
+  
+  private void checkInvariants(){
+    assert(key != null);
+    assert(key.equals("i" + imei));
+    assert(tasks.size() == getTaskCount(null)); //we could do this specifically for each status
+  }
+  
+  /////////////////////////// Public Methods ///////////////////////////
+  
+  /**
    * 
-   * @param status
+   * @param status The TaskStatus.
    * @return All tasks with the given status, or all tasks if status is null.
    */
   public List<Task> getTasks(TaskStatus status){
@@ -100,17 +143,15 @@ public class Device {
     }
     return res;
   }
-  
-
+ 
   /**
-   * These are an optimization for the db. We use Integer for pass-by-reference
+   * Get the number of tasks for a particular {@link TaskStatus}.
+   * This is much more efficient than calling getTasks(status).size(), because 
+   * the task count is stored locally within the Device, so the task list does 
+   * not have to be fetched.
+   * @param status The TaskStatus.
+   * @return The number of tasks with that TaskStatus.
    */
-  @Persistent
-  private int numPending;
-  @Persistent
-  private int numSuccess;
-  @Persistent
-  private int numFailed;
   public int getTaskCount(TaskStatus status){
     //return getTasks(status).size();
     switch(status){
@@ -124,25 +165,11 @@ public class Device {
     	return numPending + numSuccess + numFailed;
 	}
   }
-  /**
-   * Called by Device and Task.
-   * @param status
-   * @param count
-   */
-  protected void incTaskCount(TaskStatus status, int inc){
-	    switch(status){
-	      case PENDING:
-	        numPending += inc;
-	        break;
-	      case SUCCESS:
-	        numSuccess += inc;
-	        break;
-	      case FAILED:
-	        numFailed += inc;
-	        break;
-	    }
-  }
 
+  /**
+   * Add a Task to this Device.
+   * @param t The Task to add.
+   */
   public void addTask(Task t){
     if (t == null || t.getType()==null || t.getStatus()==null){
       throw new NullPointerException();
@@ -152,7 +179,11 @@ public class Device {
     incTaskCount(t.getStatus(), 1);
   }
  
-  
+  /**
+   * Remove a Task from this Device.
+   * @param t The Task to remove.
+   * @return true if the Task existed for this device.
+   */
   public boolean removeTask(Task t){
     // all the nonsense her is because appengine JDO does not really work 
     // properly on collections. Basically, the 'list' is just a query that finds 
@@ -161,79 +192,136 @@ public class Device {
 	if (t.getDevice() == null || !t.getDevice().equals(this)){
 		return false;
 	}
-	//XXX(alerer): Appengine's list.remove() doesn't work - but this mapping 
-	// thing does.
 	t.setDevice(null);
 	incTaskCount(t.getStatus(), -1);
 	return true;
   }
-  
-  private void checkInvariants(){
-    assert(key != null);
-    assert(key.equals("i" + imei));
-    assert(tasks.size() == getTaskCount(null)); //we could do this specifically for each status
-  }
 
+  /**
+   * 
+   * @return The IMEI for this Device.
+   */
   public String getImei() {
     return imei;
   }
 
+  /**
+   * 
+   * @param imei The IMEI for this Device.
+   */
   public void setImei(String imei) {
     this.imei = imei;
   }
   
+  /**
+   * 
+   * @param sim The SIM serial # for this Device.
+   */
   public void setSim(String sim) {
     this.sim = sim;
   }
 
+  /**
+   * 
+   * @return The SIM serial # for this Device.
+   */
   public String getSim() {
     return sim;
   }
 
+  /**
+   * 
+   * @param imsi The IMSI for this Device.
+   */
   public void setImsi(String imsi) {
     this.imsi = imsi;
   }
 
+  /**
+   * 
+   * @return The IMSI for this Device.
+   */
   public String getImsi() {
     return imsi;
   }
 
+  /**
+   * 
+   * @param phoneNumber The phone number for this Device.
+   */
   public void setPhoneNumber(String phoneNumber) {
     this.phoneNumber = phoneNumber;
   }
 
+  /**
+   * 
+   * @return The phone number for this Device.
+   */
   public String getPhoneNumber() {
     return phoneNumber;
   }
 
-  public void setNumberWithValidator(String numberWithValidator) {
-    this.numberWithValidator = numberWithValidator;
+  /**
+   * 
+   * @param smsValidator Place to store some string used by the {@link org.odk.manage.server.sms.SmsService}
+   * to handle SMS. May or may not be used by a particular {@link org.odk.manage.server.sms.SmsService}.
+   */
+  public void setSmsValidator(String smsValidator) {
+    this.smsValidator = smsValidator;
   }
 
-  public String getNumberWithValidator() {
-    return numberWithValidator;
+  /**
+   * 
+   * @see Device#setSmsValidator
+   */
+  public String getSmsValidator() {
+    return smsValidator;
   }
 
+  /**
+   * 
+   * @param userId The client-configured user ID for the device.
+   */
   public void setUserId(String userId) {
     this.userId = userId;
   }
 
+  /**
+   * 
+   * @return The client-configured user ID for the device.
+   */
   public String getUserId() {
     return userId;
   }
 
+  /**
+   * 
+   * @param comments Administrator-entered comments about the device/operator.
+   */
   public void setComments(String comments) {
     this.comments = comments;
   }
 
+  /**
+   * 
+   * @return Administrator-entered comments about the device/operator.
+   */
   public String getComments() {
     return comments;
   }
 
+  /**
+   * 
+   * @param lastContacted The last time the server contacted this device.
+   */
   public void setLastContacted(Date lastContacted) {
     this.lastContacted = lastContacted;
   }
 
+  /**
+   * 
+   * @return The last time the server contacted this device.
+   */
   public Date getLastContacted() {
     return lastContacted;
   }

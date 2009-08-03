@@ -59,7 +59,7 @@ public class DbAdapter {
       String imsi, 
       String sim,
       String userId,
-      String numberWithValidator){
+      String smsValidator){
 
     Device device = getDevice(imei);
     if (device == null) {
@@ -74,13 +74,17 @@ public class DbAdapter {
       if (userId != null)
     device.setUserId(userId);
       if (phoneNumber != null)
-    device.setNumberWithValidator(numberWithValidator);
+    device.setSmsValidator(smsValidator);
     device.setLastContacted(new Date());
 
     pm.makePersistent(device);
       
   }
   
+  /**
+   * Get 
+   * @return A list of all {@link Device}s, ordered by userId.
+   */
   public List<Device> getDevices(){
     Query q = pm.newQuery(Device.class);
     q.setOrdering("userId"); //order by userId
@@ -101,7 +105,11 @@ public class DbAdapter {
     }
   }
   
-  
+  /**
+   * Gets the value for a {@link Preference}, given the preference name.
+   * @param name The preference name.
+   * @return The preference value.
+   */
   public String getPreference(String name){
     Key k = KeyFactory.createKey(Preference.class.getSimpleName(), name);
     try {
@@ -112,6 +120,11 @@ public class DbAdapter {
     }
   }
   
+  /**
+   * Sets a {@link Preference}.
+   * @param name The preference name.
+   * @param value The preference value.
+   */
   public void setPreference(String name, String value){
     Key k = KeyFactory.createKey(Preference.class.getSimpleName(), name);
     try {
@@ -123,6 +136,11 @@ public class DbAdapter {
     }
   }
   
+  /**
+   * Gets a {@link Task} from the datastore, given it's id.
+   * @param id The Task id.
+   * @return The Task.
+   */
   public Task getTask(String id){
     Key k = KeyFactory.stringToKey(id);
     try {
@@ -131,6 +149,11 @@ public class DbAdapter {
       return null;
     }
   }
+  
+  /**
+   * Deletes a task from the datastore.
+   * @param t The task.
+   */
   public void deleteTask(Task t){
     Device device = t.getDevice();
     if (device != null) {
@@ -139,6 +162,10 @@ public class DbAdapter {
     pm.deletePersistent(t);
   }
   
+  /**
+   * Close the underlying database. It is very important that this method is 
+   * called when you are finished using the DbAdapter.
+   */
   public void close(){
     pm.close();
   }

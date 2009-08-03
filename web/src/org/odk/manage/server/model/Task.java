@@ -24,7 +24,11 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 /**
+ * A datastore model for a {@link Task}, a scheduled task to be run on a particular 
+ * device.
  * 
+ * Note: Tasks are synchronized between the server and the Android client, which stores 
+ * tasks in a local sqllite database.
  *
  * @author alerer@google.com (Adam Lerer)
  */

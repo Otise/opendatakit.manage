@@ -28,6 +28,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * The servlet serving the main admin page (/admin.html) for ODK Manage.
+ * @author alerer@google.com (Your Name Here)
+ *
+ */
 public class ManageAdminServlet extends HttpServlet {
 
   private static final Logger log = Logger.getLogger(ManageAdminServlet.class.getName());
@@ -218,6 +223,9 @@ public class ManageAdminServlet extends HttpServlet {
   
   
   @Override
+  /**
+   * We're using POST on this servlet to update the ODK aggregate domain.
+   */
   public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     
     // authenticate the user as an admin
@@ -240,6 +248,8 @@ public class ManageAdminServlet extends HttpServlet {
   }
     
 
+  // ---------------------------------------------------------
+  // These methods handle the link to ODK Aggregate.
   
   private class OdkAggregateForm {
     public String name;

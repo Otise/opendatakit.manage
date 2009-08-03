@@ -19,6 +19,16 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * This servlet handles 'performing actions', i.e. submissions from the 'Perform Action' console 
+ * at the top of the ODK Manage admin page.
+ * 
+ * Actions include adding tasks to devices, as well as sending SMS notifications/messages.
+ * 
+ * TODO: clean up the business logic, and move it  somewhere other than this servlet.
+ * @author alerer@google.com (Adam)
+ *
+ */
 public class DoActionServlet extends HttpServlet {
   private static final Logger log = Logger.getLogger(DoActionServlet.class.getName());
   

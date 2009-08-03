@@ -45,7 +45,9 @@ public class DeviceUpdateServlet extends HttpServlet {
         String imei = ((Element) doc.getElementsByTagName("tasks").item(0)).getAttribute("imei");
         Device device = dba.getDevice(imei);
         device.setLastContacted(new Date());
-      } catch (Exception e) {}
+      } catch (Exception e) {
+        debug("Exception updating last-contacted: " + e.getStackTrace().toString());
+      }
       
       NodeList taskNodes = doc.getElementsByTagName("task");
       

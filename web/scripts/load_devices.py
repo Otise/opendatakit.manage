@@ -1,7 +1,8 @@
 import urllib
 import urllib2
 
-domain = 'http://odk-manage-stresstest.appspot.com'
+#domain = 'http://odk-manage-stresstest.appspot.com'
+domain = 'http://localhost:8080'
 
 def loadDevicesAndTasks(numDevices, numTasks, offset=0):
   for n in range(offset, offset+numDevices):
@@ -41,4 +42,4 @@ def doPost(url, values):
   except:
     print 'Error'
 
-loadDevicesAndTasks(1, 0, offset=500)
+loadDevicesAndTasks(10, 5, offset=500)

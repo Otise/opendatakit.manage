@@ -19,6 +19,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * This servlet provides an XML task list for Manage clients.
+ * @author alerer@google.com (Adam Lerer)
+ *
+ */
 public class TaskListServlet extends HttpServlet {
 
   private static final Logger log = Logger.getLogger(TaskListServlet.class.getName());

@@ -13,6 +13,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * This servlet is responsible for deleting tasks from a device.
+ * 
+ * Tasks cannot really be deleted (or created) in large batches (>100) in the current 
+ * implementation until task queues are released.
+ * 
+ * @author alerer@google.com (Adam Lerer)
+ *
+ */
 public class DeleteTasksServlet extends HttpServlet {
 
   private static final Logger log = Logger.getLogger(DeleteTasksServlet.class.getName());
@@ -44,7 +53,7 @@ public class DeleteTasksServlet extends HttpServlet {
       for (String id : taskIds){
         Task task = dba.getTask(id);
         if (task == null) {
-          debug("Task ID did nto correspond to a task...");
+          debug("Task ID did not correspond to a task...");
           continue;
         }
         dba.deleteTask(task);
