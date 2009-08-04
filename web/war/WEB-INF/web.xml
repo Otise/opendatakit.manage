@@ -90,16 +90,5 @@
     <servlet-name>deleteTasksServlet</servlet-name>
     <url-pattern>/deleteTasks</url-pattern>
   </servlet-mapping>
-  
-  <servlet>
-    <servlet-name>appengineSmsReceiverServlet</servlet-name>
-    <servlet-class>org.odk.manage.server.sms.AppengineSmsService.AppengineSmsReceiverServlet</servlet-class>
-  </servlet>
-  
-  <servlet-mapping>
-    <servlet-name>appengineSmsReceiverServlet</servlet-name>
-    <url-pattern>/_ah/sms/message/</url-pattern>
-  </servlet-mapping>
-  
 
 </web-app>
