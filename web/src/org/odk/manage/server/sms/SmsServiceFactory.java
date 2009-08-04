@@ -12,7 +12,7 @@ public class SmsServiceFactory {
    * The SmsService used by this application. To use a different SmsService, just 
    * implement the SmsService interface and change the value of this variable.
    */
-  private static final SmsService service = new AppengineSmsService();
+  private static final SmsService service = new EmptySmsService();
   
   /**
    * Do not change.
