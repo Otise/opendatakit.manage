@@ -5,7 +5,6 @@ package org.odk.manage.android.model;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
@@ -164,7 +163,10 @@ public class DbAdapter {
     return mDb.delete(TASKS_TABLE, KEY_TASKS_ID + "= ?", new String[]{id}) > 0;
   }
 
-
+  /**
+   * 
+   * @return A list of pending tasks.
+   */
   public List<Task> getPendingTasks() {
     assert (mDb != null); // the database is open
     Cursor c =
@@ -175,6 +177,10 @@ public class DbAdapter {
     return l;
   }
   
+  /**
+   * 
+   * @return A list of unsynced tasks.
+   */
   public List<Task> getUnsyncedTasks() {
     assert (mDb != null); // the database is open
     Cursor c =
@@ -186,10 +192,8 @@ public class DbAdapter {
   }
   
   /**
-   * Return a Cursor over the list of all surveys NOTE: Cursors allow for WRITE
-   * access to their result set. This object CANNOT be exposed to the user.
    * 
-   * @return Cursor over all surveys
+   * @return A list of all tasks.
    */
   public List<Task> getAllTasks() {
     assert (mDb != null); // the database is open
@@ -233,7 +237,7 @@ public class DbAdapter {
    * Sets the task status for this tasks, both locally and in the database.
    * Also sets status synced to false if the status changes
    * @param t The task to be modified.
-   * @param success The new status.
+   * @param status The new status.
    */
   public void setTaskStatus(Task t, TaskStatus status) {
     if (status == null || t.getStatus().equals(status)) {
@@ -252,7 +256,7 @@ public class DbAdapter {
   /**
    * Sets the task status synced for this tasks, both locally and in the database.
    * @param t The task to be modified.
-   * @param success The new status.
+   * @param synced The new synced.
    */
   public void setTaskStatusSynced(Task t, boolean synced) {
     t.setStatusSynced(synced);
@@ -265,7 +269,6 @@ public class DbAdapter {
   /**
    * Increments the number of attempts for this task, both locally and in the database.
    * @param t The task to be modified.
-   * @param success The new status.
    */
   public void incrementNumAttempts(Task t) {
     t.setNumAttempts(t.getNumAttempts() + 1);

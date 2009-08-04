@@ -13,6 +13,13 @@ import org.odk.manage.android.comm.SmsSender;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This handler is responsible for carrying out device registration with the 
+ * ODK Manage server.
+ * 
+ * @author alerer@google.com (Adam Lerer)
+ *
+ */
 public class DeviceRegistrationHandler {
   
   private Context ctx;
@@ -29,8 +36,8 @@ public class DeviceRegistrationHandler {
   
   /**
    * 
-   * @return true if there is a SIM card, and the device hasn't been registered 
-   * with that SIM card. Returns false if there is a registration SMS in transit.
+   * @return true if the IMSI has changed since the last registration.
+   *  Returns false if there is a registration SMS in transit.
    */
   public boolean registrationNeededForImei(){
     boolean registrationInProgress = prefsAdapter
@@ -53,8 +60,9 @@ public class DeviceRegistrationHandler {
   }
   
   /**
+   * Attempts to register the device with the server.
    * 
-   * @param return Toast If true, a Toast will display with the result of the registration.
+   * @param returnToast If true, a Toast will display with the result of the registration.
    */
   public void register(boolean returnToast) {
     if (propsAdapter.getIMSI() == null || !prefsAdapter.getBoolean(Constants.PREF_SMS_ENABLED_KEY, false)) {
@@ -65,6 +73,10 @@ public class DeviceRegistrationHandler {
     }
   }
   
+  /**
+   * Attempts to register the devices with the server by SMS (asynchronously).
+   * @param returnToast
+   */
   public void registerBySms(boolean returnToast){
     final boolean fReturnToast = returnToast;
     prefsAdapter.setPreference(Constants.PREFS_REG_IN_PROGRESS_KEY, true);
@@ -116,6 +128,11 @@ public class DeviceRegistrationHandler {
 
   }
   
+  /**
+   * Attempts to register the device with the server.
+   * TODO(alerer): should be done asynchronously.
+   * @param returnToast
+   */
   public void registerByHttp(boolean returnToast){
     Map<String,String> regMap = createRegisterMap();
     String url = prefsAdapter.getString(Constants.PREF_URL_KEY, null) + "/" + Constants.REGISTER_PATH;
@@ -143,7 +160,7 @@ public class DeviceRegistrationHandler {
     return paramMap;
   }
   
-  public void newProperty(String name, String value, Map<String,String> paramMap){
+  private void newProperty(String name, String value, Map<String,String> paramMap){
     if (name == null || value == null)
       return;
     Log.d("OdkManage","New registration property: <" + name + "," + value + ">");

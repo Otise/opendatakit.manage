@@ -1,15 +1,14 @@
 package org.odk.manage.android;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.telephony.gsm.SmsMessage;
 import android.util.Log;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Receives intents corresponding to <ol><li>Received SMS Messages</li>
@@ -78,6 +77,7 @@ public class IntentReceiver extends BroadcastReceiver {
     }
     return false;
   }
+  
   private void startOdkManageService(Context ctx, 
       OdkManageService.MessageType messageType, Map<String, String> extras){
     
@@ -98,6 +98,13 @@ public class IntentReceiver extends BroadcastReceiver {
 
   }
   
+  /**
+   * Parses any received SMS messages for ODK manage intents.
+   * 
+   * 
+   * @param ctx
+   * @param intent
+   */
   private void parseSmsForOdkManageMessages(Context ctx, Intent intent){
     SmsMessage msgs[] = getMessagesFromIntent(intent);
     String message;
@@ -118,18 +125,32 @@ public class IntentReceiver extends BroadcastReceiver {
     }
   }
   
-  private boolean isNewTasksTrigger(String number, String message){
+  /**
+   * Checks the sender and content of an SMS message to determine if it 
+   * is a new tasks trigger message.
+   * @param sender
+   * @param content
+   * @return true if this messages is a new tasks trigger message.
+   */
+  private boolean isNewTasksTrigger(String sender, String content){
     //TODO(alerer): add 
     String serverNum = prefsAdapter.getString(Constants.PREF_SMS_KEY, "");
     Log.d(Constants.TAG, "In isNewTasksTrigger");
-    Log.d(Constants.TAG, "number: " + number + "; serverNum: " + serverNum);
+    Log.d(Constants.TAG, "number: " + sender + "; serverNum: " + serverNum);
 
     return (serverNum != null &&
-            serverNum.equals(number) &&
-            message.startsWith(Constants.NEW_TASKS_TRIGGER));
+            serverNum.equals(sender) &&
+            content.startsWith(Constants.NEW_TASKS_TRIGGER));
   }
 
-  // easiest way to extract messages from phone
+  /**
+   * Easiest way to extract SMS messages from intent.
+   * 
+   * Copied (mostly) from Surveyor.
+   *    
+   * @param intent The SMS_RECEIVED intent.
+   * @return An array of messages.
+   */
   private SmsMessage[] getMessagesFromIntent(Intent intent) {
     SmsMessage retMsgs[] = null;
     Bundle bdl = intent.getExtras();

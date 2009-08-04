@@ -4,14 +4,13 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.IBinder;
 import android.util.Log;
 
-import org.odk.manage.android.comm.CommunicationProtocol;
+import org.odk.manage.android.activity.ManageActivity;
 import org.odk.manage.android.comm.FileHandler;
 import org.odk.manage.android.comm.HttpAdapter;
 import org.odk.manage.android.model.DbAdapter;
@@ -30,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -38,6 +38,16 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+/**
+ * This class contains the main business logic for the ODK Manage client.
+ * <p>
+ * The ODK Manage service runs in the background. It is triggered by 
+ * {@link IntentReceiver} (which receives and forwards a variety of system intents), 
+ * by {@link ManageActivity}, and by its own internal timer that wakes it up 
+ * 
+ * @author alerer@google.com (Adam Lerer)
+ *
+ */
 public class OdkManageService extends Service{
 
   public static final String MESSAGE_TYPE_KEY = "messagetype";
@@ -63,9 +73,14 @@ public class OdkManageService extends Service{
 
   @Override
   public void onStart(Intent i, int startId){
-    //TODO(alerer): these tasks are very coarse-grained. Think about whether more 
-    //fine-grained tasks would be better (e.g. timeouts could be better suited to 
-    //the particular task
+    /**
+     * We have a single worker thread that executes all intents synchronously. 
+     * This prevents resource overuse and allows tasks to be executed atomically.
+     * 
+     * TODO(alerer): these tasks are very coarse-grained. Think about whether more 
+     * fine-grained tasks would be better (e.g. timeouts could be better suited to 
+     * the particular task
+     */
     final Intent mIntent = i;
     worker.addTask(new WorkerTask(){
       @Override
@@ -99,6 +114,8 @@ public class OdkManageService extends Service{
     worker.start();
     
     // Creates a timer thread that will wake up OdkManageService periodically
+    // TODO(alerer): look into using an Alarm Service 
+    //(http://developer.android.com/guide/samples/ApiDemos/src/com/example/android/apis/app/AlarmService.html)
     if (timerThread == null){
       timerThread = new Thread(){
         @Override
@@ -135,14 +152,18 @@ public class OdkManageService extends Service{
   
   /////////////////////////
  
+  /**
+   * Handle an intent.
+   */
   private void handleIntent(Intent i){
     MessageType mType = (MessageType) i.getExtras().get(MESSAGE_TYPE_KEY);
     Log.i(Constants.TAG, "OdkManageService started. Type: " + mType);
     
     syncDeviceImeiRegistration();
     
-    //TODO(alerer): use the CommunicationStategy
     boolean isConnected = isNetworkConnected();
+    
+    // handle the particular message
     switch (mType) {
       case NEW_TASKS:
         prefsAdapter.setPreference(Constants.PREF_NEW_TASKS_KEY, true);
@@ -172,6 +193,12 @@ public class OdkManageService extends Service{
     }
   }
   
+  
+  
+  /**
+   * 
+   * @return true if the client should query the server for new tasks.
+   */
   private boolean shouldRequestNewTasks() {
     long lastRequested = prefsAdapter.getLong(Constants.PREF_TASKS_LAST_DOWNLOADED_KEY, 0);
     
@@ -192,6 +219,11 @@ public class OdkManageService extends Service{
     return false;
   }
 
+  /**
+   * 
+   * @return true if the client is connected to the internet. This value is dependent 
+   * both on the current connection and the client settings (e.g. GPRS_ENABLED).
+   */
   private boolean isNetworkConnected(){
     NetworkInfo ni = getNetworkInfo();
     if (ni == null) {
@@ -202,40 +234,6 @@ public class OdkManageService extends Service{
         (prefsAdapter.getBoolean(Constants.PREF_GPRS_ENABLED_KEY, false) || 
             ni.getType() == ConnectivityManager.TYPE_WIFI)); //if GPRS not supported, do not use it
   }
-  
-  
-  private void syncDeviceImeiRegistration(){
-    
-    DeviceRegistrationHandler drh = new DeviceRegistrationHandler(this);
-    if (drh.registrationNeededForImei()){
-      Log.i(Constants.TAG, "IMSI changed: Registering device");
-      drh.register(false);
-    }
-  }
-  
-  
-  private void handlePackageAddedIntent(String packageName){
-    Log.d(Constants.TAG, "Package added detected: " + packageName);
-    List<Task> pendingTasks = dba.getPendingTasks();
-    for (Task t: pendingTasks) {
-      Log.d(Constants.TAG, "Type: " + t.getType() + "; Name: " + t.getName());
-      if (t.getType().equals(TaskType.INSTALL_PACKAGE) && 
-          t.getName().equals(packageName)){ // extras stores the package name
-        dba.setTaskStatus(t, TaskStatus.SUCCESS);
-        Log.d(Constants.TAG, "Task " + t.getUniqueId() + " (INSTALL_PACKAGE) successful.");
-        break;
-      }
-    }
-    
-  }
-  private void registerPhonePropertiesChangeListener() {
-
-    Intent mIntent = new Intent(this, OdkManageService.class);
-    mIntent.putExtra(MESSAGE_TYPE_KEY, MessageType.PHONE_PROPERTIES_CHANGE);
-    PendingIntent pi = PendingIntent.getService(this, 0, mIntent, 0);
-    propAdapter.registerListener(pi);
-  }
-  
   
   private NetworkInfo getNetworkInfo() {
     ConnectivityManager cm = (ConnectivityManager) 
@@ -252,55 +250,23 @@ public class OdkManageService extends Service{
     }
   }
   
-  private List<Task> getTasksFromTasklist(Document doc){
-List<Task> tasks = new ArrayList<Task>();
+  /**
+   * Check if the device has been registered with its current IMEI, and if not, attempt 
+   * to register it.
+   */
+  private void syncDeviceImeiRegistration(){
     
-    doc.getDocumentElement().normalize();
-    
-    NodeList taskNodes = doc.getElementsByTagName("task");
-    
-    Log.i(Constants.TAG,"=====\nTasks:");
-    for (int i = 0; i < taskNodes.getLength(); i++) {
-      if (!(taskNodes.item(i) instanceof Element)) {
-        continue;
-      }
-      Element taskEl = (Element) taskNodes.item(i);
-      Log.i(Constants.TAG,"-----");
-      NamedNodeMap taskAttributes = taskEl.getAttributes();
-      
-      // parsing ID
-      String id = getAttribute(taskAttributes, "id");
-      Log.i(Constants.TAG, "Id: " + id);
-      
-      // parsing type
-      String typeString = getAttribute(taskAttributes, "type");
-      Log.i(Constants.TAG, "Type: " + typeString);
-      TaskType type = null;
-      try {
-        type = Enum.valueOf(TaskType.class, typeString);
-      } catch (Exception e) {
-        Log.e(Constants.TAG, "Type not recognized: " + typeString);
-        continue;
-      }
-      
-      Task task = new Task(id, type, TaskStatus.PENDING);
-      tasks.add(task);
-      
-      task.setName(getAttribute(taskAttributes, "name"));
-      task.setUrl(getAttribute(taskAttributes, "url"));
-      task.setExtras(getAttribute(taskAttributes, "extras"));
+    DeviceRegistrationHandler drh = new DeviceRegistrationHandler(this);
+    if (drh.registrationNeededForImei()){
+      Log.i(Constants.TAG, "IMSI changed: Registering device");
+      drh.register(false);
     }
-    
-    return tasks;
   }
   
-  private String getAttribute(NamedNodeMap attributes, String name) {
-    if (attributes.getNamedItem(name) == null) {
-      return null;
-    }
-    return attributes.getNamedItem(name).getNodeValue();
-  }
-  
+  /**
+   * Attempts to download new tasks from the server, parse them, and add the 
+   * results to the local tasks database.
+   */
   private void requestNewTasks(){
     Log.i(Constants.TAG, "Requesting new tasks");
 
@@ -313,7 +279,7 @@ List<Task> tasks = new ArrayList<Task>();
       String imei = new PhonePropertiesAdapter(this).getIMEI();
       String url = getTaskListUrl(baseUrl, imei);
       Log.i(Constants.TAG, "tasklist url: " + url);
-      newTaskStream = new HttpAdapter().getUrl(url);
+      newTaskStream = new HttpAdapter().getUrlConnection(url).getInputStream();
 
       if (newTaskStream == null){
         Log.e(Constants.TAG,"Null task stream");
@@ -364,7 +330,12 @@ List<Task> tasks = new ArrayList<Task>();
     }
   }
   
-  
+  /**
+   * 
+   * @param baseUrl The domain of the ODK Manage server
+   * @param imei The IMEI of this device.
+   * @return A URL for downloading this device's task list.
+   */
   private String getTaskListUrl(String baseUrl, String imei){
     if (baseUrl.charAt(baseUrl.length()-1) == '/')
       baseUrl = baseUrl.substring(0, baseUrl.length()-1);
@@ -372,6 +343,64 @@ List<Task> tasks = new ArrayList<Task>();
     return baseUrl + "/tasklist?imei=" + imei;
   }
   
+  /**
+   * 
+   * @param doc An XML {@link Document} following the ODK Manage task list specification.
+   * @return A {@List} of {@link Task}s from the XML document, or null if the Document was invalid.
+   */
+  private List<Task> getTasksFromTasklist(Document doc){
+    List<Task> tasks = new ArrayList<Task>();
+    
+    doc.getDocumentElement().normalize();
+    
+    NodeList taskNodes = doc.getElementsByTagName("task");
+    
+    Log.i(Constants.TAG,"=====\nTasks:");
+    for (int i = 0; i < taskNodes.getLength(); i++) {
+      if (!(taskNodes.item(i) instanceof Element)) {
+        continue;
+      }
+      Element taskEl = (Element) taskNodes.item(i);
+      Log.i(Constants.TAG,"-----");
+      NamedNodeMap taskAttributes = taskEl.getAttributes();
+      
+      // parsing ID
+      String id = getAttribute(taskAttributes, "id");
+      Log.i(Constants.TAG, "Id: " + id);
+      
+      // parsing type
+      String typeString = getAttribute(taskAttributes, "type");
+      Log.i(Constants.TAG, "Type: " + typeString);
+      TaskType type = null;
+      try {
+        type = Enum.valueOf(TaskType.class, typeString);
+      } catch (Exception e) {
+        Log.e(Constants.TAG, "Type not recognized: " + typeString);
+        continue;
+      }
+      
+      Task task = new Task(id, type, TaskStatus.PENDING);
+      tasks.add(task);
+      
+      task.setName(getAttribute(taskAttributes, "name"));
+      task.setUrl(getAttribute(taskAttributes, "url"));
+      task.setExtras(getAttribute(taskAttributes, "extras"));
+    }
+    
+    return tasks;
+  }
+
+  private String getAttribute(NamedNodeMap attributes, String name) {
+    if (attributes.getNamedItem(name) == null) {
+      return null;
+    }
+    return attributes.getNamedItem(name).getNodeValue();
+  }
+  
+  /**
+   * Attempts to process all pending tasks in the local database. Does not 
+   * download new tasks from the server.
+   */
   private void processPendingTasks(){
 
     List<Task> tasks = dba.getPendingTasks();
@@ -402,7 +431,7 @@ List<Task> tasks = new ArrayList<Task>();
     if (tasks.size() == 0) {
       return true;
     }
-    String updateXml = updateGen.toString();
+    String updateXml = updateGen.outputXml();
     String manageUrl = prefsAdapter.getString(Constants.PREF_URL_KEY, "");
     boolean success = 
       new HttpAdapter().doPost(manageUrl + "/" + Constants.UPDATE_PATH, updateXml);
@@ -415,6 +444,11 @@ List<Task> tasks = new ArrayList<Task>();
     return success;
   }
   
+  /**
+   * Attempts to execute a given task.
+   * @param t The task to be attempted.
+   * @return The new status the Task should be set to.
+   */
   private TaskStatus attemptTask(Task t){
     
     Log.i(Constants.TAG,
@@ -436,7 +470,13 @@ List<Task> tasks = new ArrayList<Task>();
     }
   }
   
-  //TODO(alerer): change this to firing off an intent to ODK Collect
+  /**
+   * Executes a task of type ADD_FORM. 
+   * <p>
+   * TODO(alerer): change this to firing off an intent to ODK Collect
+   * @param t The task to be attempted.
+   * @return The new TaskStatus of the Task.
+   */
   private TaskStatus attemptAddForm(Task t){
     assert(t.getType().equals(TaskType.ADD_FORM));
     
@@ -451,7 +491,8 @@ List<Task> tasks = new ArrayList<Task>();
     
     String url = t.getUrl();
     try{
-      boolean success = fh.getFormFromUrl(new URL(url), 
+      URLConnection c = new HttpAdapter().getUrlConnection(url);
+      boolean success = fh.getFormFromConnection(c, 
           formsDirectory) != null;
       Log.i(Constants.TAG, 
           "Downloading form was " + (success? "":"not ") + "successfull.");
@@ -463,7 +504,12 @@ List<Task> tasks = new ArrayList<Task>();
     }
   }
   
-  //TODO(alerer): who should handle this? Probably Manage...just make sure.
+  /**
+   * Attempts to execute a task of type INSTALL_PACKAGE.
+   * TODO(alerer): who should handle this? Probably Manage...just make sure.
+   * @param t The task to be attempted.
+   * @return The new TaskStatus of the Task.
+   */
   private TaskStatus attemptInstallPackage(Task t){
     assert(t.getType().equals(TaskType.INSTALL_PACKAGE));
     
@@ -477,8 +523,9 @@ List<Task> tasks = new ArrayList<Task>();
     }
     
     String url = t.getUrl();
-    try { 
-      File apk = fh.getFileFromUrl(new URL(url), packagesDirectory);
+    try {
+      URLConnection c = new HttpAdapter().getUrlConnection(url);
+      File apk = fh.getFileFromConnection(c, packagesDirectory);
 //      try {   
 //        //Note: this will only work in /system/apps
 //        Intent installIntent = new Intent(Intent.ACTION_PACKAGE_INSTALL,
@@ -514,9 +561,42 @@ List<Task> tasks = new ArrayList<Task>();
     }
   }
   
+  /**
+   * This method is called when new tasks are successfully downloaded. It updates preferences accordingly.
+   */
   public void onNewTasksReceived(){
     prefsAdapter.setPreference(Constants.PREF_NEW_TASKS_KEY, false);
     prefsAdapter.setPreference(Constants.PREF_TASKS_LAST_DOWNLOADED_KEY, new Date().getTime());
+  }
+  
+  /**
+   * When a PACKAGE_ADDED intent is received, this method compares the package 
+   * name with all pending INSTALL_PACKAGE tasks. If the package names match, that 
+   * task is successful.
+   * @param packageName The package name.
+   */
+  private void handlePackageAddedIntent(String packageName){
+    Log.d(Constants.TAG, "Package added detected: " + packageName);
+    List<Task> pendingTasks = dba.getPendingTasks();
+    for (Task t: pendingTasks) {
+      Log.d(Constants.TAG, "Type: " + t.getType() + "; Name: " + t.getName());
+      if (t.getType().equals(TaskType.INSTALL_PACKAGE) && 
+          t.getName().equals(packageName)){ // extras stores the package name
+        dba.setTaskStatus(t, TaskStatus.SUCCESS);
+        Log.d(Constants.TAG, "Task " + t.getUniqueId() + " (INSTALL_PACKAGE) successful.");
+        break;
+      }
+    }  
+  }
+  
+  /**
+   * Adds this class as a listener for changed phone properties (e.g. IMEI).
+   */
+  private void registerPhonePropertiesChangeListener() {
+    Intent mIntent = new Intent(this, OdkManageService.class);
+    mIntent.putExtra(MESSAGE_TYPE_KEY, MessageType.PHONE_PROPERTIES_CHANGE);
+    PendingIntent pi = PendingIntent.getService(this, 0, mIntent, 0);
+    propAdapter.registerListener(pi);
   }
 
 }

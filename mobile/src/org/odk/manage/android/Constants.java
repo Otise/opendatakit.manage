@@ -1,5 +1,11 @@
 package org.odk.manage.android;
 
+/**
+ * Static constants used by ODK Manage client.
+ * 
+ * @author alerer@google.com (Adam Lerer)
+ *
+ */
 public class Constants {
   
   //--------------------------------------------------------------------

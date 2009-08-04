@@ -22,16 +22,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-
-
 /**
  * This class provides a layer of indirection between ODK Manage activities / 
  * receivers and HTTP handling.
+ * 
+ * TODO(alerer): This class is not aware of the current network state, so how 
+ * can we encapsulate the logic that says 'dont use GPRS if GPRS is disabled'?
+ * Right now we assume that callers do this check, but that's not safe at all.
+ * 
  * @author alerer@google.com (Adam Lerer)
  *
  */
 public class HttpAdapter {
-
 
   /**
    * Returns an input stream containing the body of the response for an HTTP 
@@ -41,18 +43,23 @@ public class HttpAdapter {
    * @return An {@link InputStream} containing the content of the response body.
    * @throws IOException
    */
-  public InputStream getUrl(String url) throws IOException{
+  public URLConnection getUrlConnection(String url) throws IOException{
     URL u = new URL(url);
     Log.d(Constants.TAG, "Opening connection to " + url);
     URLConnection c = u.openConnection();
     c.setConnectTimeout(Constants.CONNECTION_TIMEOUT_MS);
     c.setReadTimeout(Constants.CONNECTION_TIMEOUT_MS);
     
-    return c.getInputStream();
+    return c;
   }
   
+  /**
+   * Performs an HTTP post.
+   * @param post An {@link HttpPost} object for the post.
+   * @return true if successful.
+   */
   private boolean doPost(HttpPost post) {
-    //TODO(alerer): what's the equivalent here of the following for URLConnection?
+    // TODO(alerer): what's the equivalent here of the following for URLConnection?
     //    c.setConnectTimeout(Constants.CONNECTION_TIMEOUT_MS);
     //    c.setReadTimeout(Constants.CONNECTION_TIMEOUT_MS);
     
@@ -79,6 +86,12 @@ public class HttpAdapter {
     //myViewUpdateHandler.sendEmptyMessage(0);
   }
   
+  /**
+   * Attempt to execute an HTTP POST request. 
+   * @param url The URL to POST to.
+   * @param params A set of parameters for the POST body.
+   * @return true if successful.
+   */
   public boolean doPost(String url, Map<String,String> params){
     
     List<NameValuePair> mFieldList = new ArrayList<NameValuePair>();
@@ -100,6 +113,12 @@ public class HttpAdapter {
     return doPost(mypost);
   }
   
+  /**
+   *Attempt to execute an HTTP POST request. 
+   * @param url The URL to POST to.
+   * @param body Data for the request body.
+   * @return true if successful.
+   */
   public boolean doPost(String url, String body){
     
     HttpPost mypost = new HttpPost(url);

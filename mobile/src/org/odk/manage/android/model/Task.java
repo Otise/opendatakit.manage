@@ -16,17 +16,28 @@ package org.odk.manage.android.model;
 
 
 /**
+ * Data object for an ODK Manage Task.
  * 
+ * Note: Tasks are synchronized between the server and the Android client, which stores 
+ * tasks in a local sqllite database. See org.odk.manage.server.model.Task in the client.
  *
  * @author alerer@google.com (Adam Lerer)
  */
 public class Task {
   
+  /**
+   * The task type. Add new task types here.
+   *
+   */
   public enum TaskType {
     ADD_FORM,
     INSTALL_PACKAGE;
   }
   
+  /**
+   * The task status.
+   *
+   */
   public enum TaskStatus {
     PENDING,
     FAILED,

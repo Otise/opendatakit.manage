@@ -16,6 +16,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class is responsible for sending SMS.
+ * 
+ * @author alerer@google.com (Adam Lerer)
+ *
+ */
 public class SmsSender {
   
   private Context ctx;
@@ -28,12 +34,26 @@ public class SmsSender {
   
   private static int messageIndex = 0;
   
+  /**
+   * 
+   * @param phoneNumber The phone number to send to.
+   * @param action The ODK action, e.g. 'reg'.
+   * @param parameters A map of parameters for the SMS.
+   * @param onSent A BroadcastReceiver that will be called when the message is sent.
+   * @param onDelivered A BroadcastReceiver that will be called when the message is delivered.
+   */
   public void sendSMS(String phoneNumber, String action, Map<String,String> parameters, BroadcastReceiver onSent, BroadcastReceiver onDelivered){
     sendSMS(phoneNumber, createSmsWithParameters(action, parameters), onSent, onDelivered);
   }
   
-  //---sends an SMS message to another device---
-  public void sendSMS(String phoneNumber, String message, BroadcastReceiver onSent, BroadcastReceiver onDelivered)
+  /**
+   * 
+   * @param phoneNumber The phone number to send to.
+   * @param content The message content.
+   * @param onSent A BroadcastReceiver that will be called when the message is sent.
+   * @param onDelivered A BroadcastReceiver that will be called when the message is delivered.
+   */
+  public void sendSMS(String phoneNumber, String content, BroadcastReceiver onSent, BroadcastReceiver onDelivered)
   {        
       
     /**
@@ -59,12 +79,18 @@ public class SmsSender {
     
     SmsManager sms = SmsManager.getDefault();
     String fullMessage =  
-      (Constants.MANAGE_SMS_TOKEN==null?"":Constants.MANAGE_SMS_TOKEN) + " " + message;
+      (Constants.MANAGE_SMS_TOKEN==null?"":Constants.MANAGE_SMS_TOKEN) + " " + content;
     
     sms.sendTextMessage(phoneNumber, null, fullMessage, sentPI, deliveredPI); 
     Log.i("OdkManage", "Sms sent: Recipient: " + phoneNumber + "; Message: " + fullMessage);
   }
   
+  /**
+   * 
+   * @param action The ODK action, e.g. 'reg'.
+   * @param parameters A map of parameters for the SMS.
+   * @return The SMS content, e.g. 'reg imei=12345&userid=johndoe'
+   */
   private String createSmsWithParameters(String action, Map<String,String> parameters){
     List<String> props = new ArrayList<String>();
     for (String prop : parameters.keySet()){

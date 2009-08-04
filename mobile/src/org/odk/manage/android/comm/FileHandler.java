@@ -20,6 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * An adapter for file handling.
  * 
  * @author alerer@google.com (Adam Lerer)
  * @author Yaw Anokwa (yanokwa@gmail.com)
@@ -89,9 +90,8 @@ public class FileHandler {
    * overwritten.
    * @return Pointer to the file downloaded, or null if unsuccessful
    */
-  public File getFormFromUrl(URL u, File downloadDirectory) throws IOException{
-    Log.i(Constants.TAG,"Downloading form: " + u);
-    File f =  getFileFromUrl(u, downloadDirectory);
+  public File getFormFromConnection(URLConnection c, File downloadDirectory) throws IOException{
+    File f =  getFileFromConnection(c, downloadDirectory);
     if (f.getName().matches(Constants.VALID_FILENAME)) {
       return f;
     }
@@ -106,13 +106,9 @@ public class FileHandler {
    * Downloads a file from a url to a directory
    * @return Filename of the file downloaded, or null if unsuccessful
    */
-  public File getFileFromUrl(URL u, File downloadDirectory) throws IOException{
+  public File getFileFromConnection(URLConnection c, File downloadDirectory) throws IOException{
     // prevent deadlock when connection is invalid
     
-    
-    URLConnection c = u.openConnection();
-    c.setConnectTimeout(Constants.CONNECTION_TIMEOUT_MS);
-    c.setReadTimeout(Constants.CONNECTION_TIMEOUT_MS);
     InputStream is = c.getInputStream();
     String filename = getFilename(c);
     filename = filename.substring(filename.lastIndexOf('/') + 1);
@@ -128,15 +124,12 @@ public class FileHandler {
     is.close();
     return f;
   }
-  
-  //TODO(alerer): Make pattern handle filename defined in quotes
-  private static Pattern dispFilenamePattern = Pattern.compile("filename=([^ ]*)( .*)?$");
+
   /**
    * Gets the filename for a file downloaded from a URLConnection. First checks the 
    * Content-disposition header for a filename; if one is not found, guesses based 
    * on the URL.
    * @param c
-   * @return
    */
   private String getFilename(URLConnection c){
     String disposition = c.getHeaderField("Content-Disposition");
@@ -152,12 +145,16 @@ public class FileHandler {
     }
   }
   
-  
-  public String getFilenameFromDisposition(String disp){
+  /**
+   * 
+   * @param disp The content-disposition field of the HTTP response.
+   * @return The attachment filename, or null if this Content-Disposition field did not contain an attachment
+   */
+  private String getFilenameFromDisposition(String disp){
     if (disp == null) {
       return null;
     }
-    //TODO(alerer): we could put the patterns as static/class vars to make it faster
+    //we could make the patterns class/object vars to make it faster
     Pattern p1 = Pattern.compile("filename=(.)");
     Matcher m1 = p1.matcher(disp);
     

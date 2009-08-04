@@ -7,16 +7,14 @@ import android.telephony.TelephonyManager;
 /**
  * This class acts as an adapter to abstract the SDK calls to phone properties 
  * such as IMEI number, phone number, battery life, network connection state, etc.
- * @author alerer@google.com (Your Name Here)
+ * @author alerer@google.com (Adam Lerer)
  *
  */
 public class PhonePropertiesAdapter {
 
-  private final Context ctx;
   private final TelephonyManager tm;
   
   public PhonePropertiesAdapter(Context ctx){
-    this.ctx = ctx;
     this.tm = (TelephonyManager) ctx.getSystemService(Context.TELEPHONY_SERVICE);
   }
   
@@ -39,7 +37,6 @@ public class PhonePropertiesAdapter {
   /**
    * Registers an intent that is fired when a phone property changes. 
    * See {@link android.telephony.PhoneStateListener}.
-   * @return
    */
   public void registerListener(PendingIntent onChange){
     
