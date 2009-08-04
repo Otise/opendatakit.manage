@@ -3,8 +3,6 @@ package org.odk.manage.server.model;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
-import org.odk.manage.server.model.Task.TaskStatus;
-
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;

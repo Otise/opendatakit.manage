@@ -101,13 +101,13 @@ public class Device {
   protected void incTaskCount(TaskStatus status, int inc){
         switch(status){
           case PENDING:
-            numPending += inc;
+            numPending = (numPending + inc < 0) ? 0 : numPending + inc;
             break;
           case SUCCESS:
-            numSuccess += inc;
+            numSuccess = (numSuccess + inc < 0) ? 0 : numSuccess + inc;
             break;
           case FAILED:
-            numFailed += inc;
+            numFailed = (numFailed + inc < 0) ? 0 : numFailed + inc;
             break;
         }
   }
