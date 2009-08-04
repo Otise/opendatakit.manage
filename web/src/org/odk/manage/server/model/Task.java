@@ -35,6 +35,10 @@ import javax.jdo.annotations.PrimaryKey;
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class Task {
   
+  /**
+   * Task type. Add new task types here.
+   *
+   */
   public enum TaskType {
     ADD_FORM,
     INSTALL_PACKAGE;
