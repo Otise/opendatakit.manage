@@ -26,9 +26,9 @@ import javax.jdo.annotations.PrimaryKey;
 /**
  * A datastore model for a {@link Task}, a scheduled task to be run on a particular 
  * device.
- * 
+ * <p>
  * Note: Tasks are synchronized between the server and the Android client, which stores 
- * tasks in a local sqllite database.
+ * tasks in a local sqllite database. See org.odk.manage.android.model.Task in the client.
  *
  * @author alerer@google.com (Adam Lerer)
  */
