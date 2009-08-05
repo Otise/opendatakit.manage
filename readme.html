@@ -283,22 +283,76 @@ execute them (e.g. no internet connection, user cancels install, etc.), Manage w
 again intermittently or when connectivity changes. If a task fails three times, it's status 
 will be changed to FAILED, and it will not be attempted any additional times.
 
-<h2>Customizing ODK Manage</h2>
-
-<a name="customize_actions_tasks"></a>
-<h3>Adding new Actions or Tasks</h3>
-TODO
-<h3>Creating a new task type</h3>
-
-<h2>Details</h2>
+<h2>Advanced Features</h2>
 
 <a name="sms"></a>
 <h3>Using SMS with ODK Manage</h3>
 
+To use SMS with ODK Manage, the Manage server needs a way to send and receive SMS. 
+There are several possibilities for SMS-enabling the Manage server.
+<div class="box">
+<ol>
+<li>Use an SMS web gateway like Clickatell.</li>
+<li>Hack together your own SMS gateway using a tool like FrontlineSMS or WinSMS.</li>
+<li>Use Google's internal appengine SMS API. Since this API is not public, only Google 
+projects (or Google-supported projects) can use this option.</li>
+</div>
 
-<a name="comm_strategy"></a>
-<h3>ODK Manage communication strategy</h3>
+You will need to edit the ODK Manage server source code to connect to SMS. Here is how: 
 
+<div class="box">
+<ol>
+<li>Look in org.odk.manage.server.sms for an SmsService implementation that 
+supports your gateway (e.g. ClickatellSmsService). If one exists, you can configure it 
+and then skip to the last step</li>
+<li>If no SmsService exists, you will need to create one yourself. Make a new class 
+in org.odk.manage.server.sms that implements SmsService. You may want to use ExampleSmsService.java 
+as a guide for how to implement your service.</li>
+In most cases, you will probably want to send an SMS by making an HTTP request, and receive 
+an SMS by receiving an HTTP request. Therefore, (a) your sendSms method will probably use the appengine 
+URL fetch API, and (b) you will probably need to create an additional servlet to receive SMS (remember to 
+register its URL in web.xml) and pass it on to your SmsService which will then forward it to listeners. 
+This is all described in ExampleSmsService.java.
+<li>Open org.odk.manage.server.sms.SmsServiceFactory and set the <i>service</i> variable to the SmsService
+you want to use</li>.
+<li>Once you have the server up and running, you will need to go change the settings on the clients 
+to Use SMS and set the server SMS number. You can either change the default in the client source code, 
+or change the setting manually on the phones.</li>
+</ol>
+</div>
+
+<a name="customize_actions_tasks"></a>
+<h3>Adding new Tasks or Actions</h3>
+
+<strong>Adding a new task type on the server</strong>
+<div class="box">
+<ol>
+<li>Modify org.odk.manage.server.model.Task by adding the new task type to the TaskType enum.</li>
+<li>Modify org.odk.manage.server.servlet.ManageAdminServlet to provide options/inputs for new actions (look for 'add new actions here' comments for template code).</li>
+<strong>Note: </strong> Tasks can have 3 string properties: name, url, and extras. These fields are set by looking at the request parameters YOUR_ACTION_TYPE.name, YOUR_ACTION_TYPE.url, and YOUR_ACTION_TYPE.extras, respectively. 
+Therefore, if you want the user to set the task url, for example, create an HTML field in the action inputs div like the following: &lt;input type='text' name='YOUR_ACTION_TYPE.url' /&gt;.
+</ol>
+</div>
+
+<strong>Adding a new task type on the client</strong>
+<div class="box">
+<ol>
+<li>Modify org.odk.manage.android.model.Task by adding the new task type to the TaskType enum.</li>
+<li>Modify org.odk.manage.android.OdkManageService#attemptTask (look for 'add new task type' for template code). You will need to write a function to carry out your new action.</li>
+</ol>
+</div>
+
+<strong>Adding a non-task action on the server</strong>
+<p>
+You may want to add an action that is not a task (e.g. send an SMS message, add a comment, etc.) Here are the steps to do so:
+<div class="box">
+<ol>
+<li>Modify org.odk.manage.server.servlet.ManageAdminServlet to provide options/inputs for new actions (look for 'add new actions here' comments for template code)</li>
+<li>Modify org.odk.manage.server.servlet.DoActionServlet#handleNonTaskAction to handle the action (look for 'add new actions here' comments for template code)</li>
+</ol>
+</div>
+
+</div>
 </div>
 </body>
 </html>
