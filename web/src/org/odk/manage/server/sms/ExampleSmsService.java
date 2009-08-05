@@ -55,7 +55,7 @@ public class ExampleSmsService implements SmsService {
   
   /**
    * In this example, our application receives SMS by getting a POST request at a particular URL. 
-   * You must register this servlet at that URL.
+   * You must register this servlet at that URL in web.xml.
    *  
    */
   static class ExampleSmsReceiverServlet extends HttpServlet {
