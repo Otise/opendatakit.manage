@@ -33,8 +33,9 @@ h3
 
 .contents .box
 {
-  padding: 0.5em;
+  padding: 0.3em;
   border: #ffe0bb dotted 1px;
+  margin: 1em;
   background: #fffde8;
 }
 
@@ -245,7 +246,7 @@ with a special keyword that notifies the Manage client that there are new tasks 
 This prompts the client to connect to the server and download the task list. The SMS can also 
 contain a message (e.g. 'enter data range as soon as possible'). This is helpful in configurations 
 where the client is configured to check in with the server on a very infrequent basis, or never.
-<p/>
+<br>
 <strong>Note:</strong> You can only perform this action if the Manage server is configured 
 to use SMS - if the <i>SMS</i> column for your devices say Yes, then you're good to go.
 <li><strong>Send SMS Message:</strong> Sends an SMS with your message to the selected devices.</li> 
@@ -314,7 +315,7 @@ URL fetch API, and (b) you will probably need to create an additional servlet to
 register its URL in web.xml) and pass it on to your SmsService which will then forward it to listeners. 
 This is all described in ExampleSmsService.java.
 <li>Open org.odk.manage.server.sms.SmsServiceFactory and set the <i>service</i> variable to the SmsService
-you want to use</li>.
+you want to use.</li>
 <li>Once you have the server up and running, you will need to go change the settings on the clients 
 to Use SMS and set the server SMS number. You can either change the default in the client source code, 
 or change the setting manually on the phones.</li>
