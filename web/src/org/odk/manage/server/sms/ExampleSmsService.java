@@ -17,15 +17,15 @@ import javax.servlet.http.HttpServletResponse;
  *
  */
 public class ExampleSmsService implements SmsService {
-
-  private static final Logger log = Logger.getLogger(ExampleSmsService.class.getName());
   
   List<SmsListener> listeners = new LinkedList<SmsListener>();
   
   @Override
   public boolean sendSms(Device device, String content) {
     if (canSendTo(device)){
-      // send to the device here ...
+//    URL url = new URL("http://www.example.com/sendSms?number=" + device.getPhoneNumber() + "&content=" + content);
+//    BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+//    ...
       return true;
     } else {
       return false;
