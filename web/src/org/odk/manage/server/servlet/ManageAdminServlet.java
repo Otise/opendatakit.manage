@@ -105,6 +105,8 @@ public class ManageAdminServlet extends HttpServlet {
       out.write("<option value='INSTALL_PACKAGE'>Task: Install Package</option>");
       out.write("<option value='NEW_TASKS_SMS'>Send New Tasks Notification SMS</option>");
       out.write("<option value='SEND_SMS'>Send SMS Message</option>");
+      // ----------------- add new actions here -------------------------------
+      // out.write("<option value='[action name]'>[action display name]</option>");
       out.write("</select>");
       out.write("<br/>");
       
@@ -145,6 +147,11 @@ public class ManageAdminServlet extends HttpServlet {
       out.write("Message: <br/><textarea name='SEND_SMS.content' cols='35' rows='4'></textarea>");
       out.write("<br/>Note: Messages can be no longer than 140 characters.");
       out.write("</div>");
+      
+      // ----------------- add new actions here (action inputs) -------------------
+      // out.write("<div class='actionInputs' id='[action/task name]_INPUTS' >");
+      // out.write("Input: <br/><textarea name='[action/task name].url' cols='35' rows='4'></textarea>");
+      // out.write("</div>");
       
       out.write("<input id='actionSubmit' type='submit' value='Submit'/>");
       out.write("</div>");
