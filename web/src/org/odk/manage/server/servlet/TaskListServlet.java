@@ -24,9 +24,9 @@ import javax.servlet.http.HttpServletResponse;
  * @author alerer@google.com (Adam Lerer)
  *
  */
-public class TaskListServlet extends HttpServlet {
-
-  private static final Logger log = Logger.getLogger(TaskListServlet.class.getName());
+public class TaskListServlet extends ServletUtilBase {
+  
+  public static final String ADDR = "tasklist";
   
   @Override
   public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -70,12 +70,6 @@ public class TaskListServlet extends HttpServlet {
       if (dba != null)
         dba.close();
     }
-  }
-  
-
-  
-  private void debug(String msg){
-    log.log(Level.WARNING, msg);
   }
 }
 

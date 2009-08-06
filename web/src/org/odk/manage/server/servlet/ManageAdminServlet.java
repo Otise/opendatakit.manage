@@ -33,9 +33,10 @@ import javax.servlet.http.HttpServletResponse;
  * @author alerer@google.com (Your Name Here)
  *
  */
-public class ManageAdminServlet extends HttpServlet {
+public class ManageAdminServlet extends ServletUtilBase {
 
-  private static final Logger log = Logger.getLogger(ManageAdminServlet.class.getName());
+  public static final String ADDR = "admin.html";
+
   private static final String[] devicePropertyNames = new String[]{
       "IMEI",
       "User ID",
@@ -84,7 +85,7 @@ public class ManageAdminServlet extends HttpServlet {
       
       out.write("<div align='right' id='aggregateUrlDiv'><form action='admin.html' method='post'>");
       out.write("ODK Aggregate URL: <input type='text' name='" + Constants.AGGREGATE_DOMAIN_KEY + 
-          "' value='" + StringEscapeUtils.escapeHtml(ServletUtils.removeNull(aggregateDomain)) + "'/>");
+          "' value='" + StringEscapeUtils.escapeHtml(removeNull(aggregateDomain)) + "'/>");
       out.write("<input type='submit' value='Update URL' />");
       out.write("</form></div>");
       String actionMessage = req.getParameter("message");
@@ -97,7 +98,7 @@ public class ManageAdminServlet extends HttpServlet {
       out.write("<div id='mainPanel'>");
       
       out.write("<div id='actionForm'>");
-      out.write("<form action='doAction' method='post'>");
+      out.write("<form action='" + DoActionServlet.ADDR + "' method='post'>");
       out.write("Perform Action: ");
       out.write("<select name='actionType' id='actionTypeSel' onchange='updateActionType()'>");
       out.write("<option value='' selected='true'></option>");
@@ -190,7 +191,7 @@ public class ManageAdminServlet extends HttpServlet {
         out.write("<td status=SUCCESS>" + (numSuccess>0?numSuccess:" ") + "</td>");
         out.write("<td status=FAILED>" + (numFailed>0?numFailed:" ") + "</td>");
         out.write("<td>");
-        out.write("<a href='viewTasks?imei=" + device.getImei() + "'>View Tasks</a>");
+        out.write("<a href='" + ViewTasksServlet.ADDR + "?imei=" + device.getImei() + "'>View Tasks</a>");
         out.write("</td>");
         
         // Send notification SMS TD
@@ -204,7 +205,7 @@ public class ManageAdminServlet extends HttpServlet {
         out.write("<td>");
         if (device.getLastContacted() != null) {
           long ms = now.getTime() - device.getLastContacted().getTime();
-          out.write(ServletUtils.getDurationString(ms) + " ago.");
+          out.write(getDurationString(ms) + " ago.");
         }
         out.write("</td>");
         out.write("</tr>");
@@ -225,7 +226,7 @@ public class ManageAdminServlet extends HttpServlet {
   }
   
   private String getPropertyTd(String property){
-    return "<td class='property'>" + StringEscapeUtils.escapeHtml(ServletUtils.removeNull(property)) + "</td>\n";
+    return "<td class='property'>" + StringEscapeUtils.escapeHtml(removeNull(property)) + "</td>\n";
   }
   
   
@@ -272,15 +273,14 @@ public class ManageAdminServlet extends HttpServlet {
       URL url = new URL(aggregateDomain + "/" + Constants.AGGREGATE_FORM_LIST_PATH);
       return url.openStream();
     } catch (MalformedURLException e) {
-      log.log(Level.SEVERE, "MalformedURLException", e);
+      logError("MalformedURLException", e);
       return null;
     } catch (IOException e) {
-      log.log(Level.SEVERE, "IOException", e);
+      logError("IOException", e);
       return null;
     }
   }
   
-
   private List<OdkAggregateForm> getFormsFromFormList(InputStream formList){
     if (formList == null) {
       return null;

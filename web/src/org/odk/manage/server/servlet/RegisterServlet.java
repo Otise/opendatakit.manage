@@ -14,9 +14,9 @@ import javax.servlet.http.HttpServletResponse;
  * @author alerer@google.com (Adam Lerer)
  *
  */
-public class RegisterServlet extends HttpServlet {
+public class RegisterServlet extends ServletUtilBase {
 
-  private static final Logger log = Logger.getLogger(RegisterServlet.class.getName());
+  public static final String ADDR = "register";
   
   @Override
   public void doPost(HttpServletRequest req, HttpServletResponse resp) {
@@ -36,10 +36,6 @@ public class RegisterServlet extends HttpServlet {
         dba.close();
     }
   }
- 
-  
-  private void debug(String msg){
-    log.log(Level.WARNING,msg);
-  }
+
   
 }

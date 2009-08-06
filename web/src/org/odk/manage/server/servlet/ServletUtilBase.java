@@ -1,11 +1,21 @@
 package org.odk.manage.server.servlet;
 
-/**
- * Static utilities class for servlets.
- * @author alerer@google.com (Adam Lerer)
- *
- */
-public class ServletUtils {
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServlet;
+
+public class ServletUtilBase extends HttpServlet {
+  private static final Logger log = Logger.getLogger("ServletLog");
+  
+  protected void debug(String msg){
+    log.log(Level.WARNING, msg);
+  }
+  
+  protected void logError(String msg, Exception e){
+    log.log(Level.SEVERE, msg, e);
+  }
+  
   public static String removeNull(String s){
     if (s == null)
       return "";

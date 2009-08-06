@@ -24,9 +24,9 @@ import javax.servlet.http.HttpServletResponse;
  * @author alerer@google.com (Adam Lerer)
  *
  */
-public class DeviceUpdateServlet extends HttpServlet {
-
-  private static final Logger log = Logger.getLogger(DeviceUpdateServlet.class.getName());
+public class DeviceUpdateServlet extends ServletUtilBase {
+  
+  public static final String ADDR = "update";
   
   @Override
   public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -72,9 +72,5 @@ public class DeviceUpdateServlet extends HttpServlet {
     } finally {
       dba.close();
     }
-  }
-  
-  private void debug(String msg){
-    log.log(Level.WARNING, msg);
   }
 }

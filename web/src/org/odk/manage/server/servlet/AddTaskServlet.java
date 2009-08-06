@@ -19,9 +19,8 @@ import javax.servlet.http.HttpServletResponse;
  * @author alerer@google.com (Your Name Here)
  *
  */
-public class AddTaskServlet extends HttpServlet {
-
-  private static final Logger log = Logger.getLogger(AddTaskServlet.class.getName());
+@Deprecated
+public class AddTaskServlet extends ServletUtilBase {
   
   @Override
   public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -86,10 +85,6 @@ public class AddTaskServlet extends HttpServlet {
         dba.close();
       }
     }
-  }
-  
-  private void debug(String msg){
-    log.log(Level.WARNING, msg);
   }
   
 }

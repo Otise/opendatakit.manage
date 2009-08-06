@@ -22,9 +22,9 @@ import javax.servlet.http.HttpServletResponse;
  * @author alerer@google.com (Adam Lerer)
  *
  */
-public class DeleteTasksServlet extends HttpServlet {
+public class DeleteTasksServlet extends ServletUtilBase {
 
-  private static final Logger log = Logger.getLogger(DeleteTasksServlet.class.getName());
+  public static final String ADDR = "deleteTasks";
   
   @Override
   public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -58,14 +58,9 @@ public class DeleteTasksServlet extends HttpServlet {
         }
         dba.deleteTask(task);
       }
-      resp.sendRedirect("viewTasks?imei=" + imei);
+      resp.sendRedirect(ViewTasksServlet.ADDR + "?imei=" + imei);
     } finally {
       dba.close();
     }
   }
-  
-  private void debug(String msg){
-    log.log(Level.WARNING, msg);
-  }
-  
 }
