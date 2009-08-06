@@ -1,0 +1,421 @@
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css" media="screen"/>
+<style type="text/css">
+* {
+  font-family:Verdana,Serif;
+}
+.banner
+{
+    background: #EDF3FE;
+    border-bottom: 1px solid #ccc;
+    padding: 1em 2em 0.5em 2em;
+}
+
+.banner h1
+{
+    font-size: 24pt;
+    margin: 0;
+}
+
+h2
+{
+    font-size: 18pt;
+}
+
+h3
+{
+    font-size: 14pt;
+    font-style: italic;
+}
+
+.contents
+{
+  padding: 1em 2em 0.5em 2em;
+}
+
+.contents .box
+{
+  padding: 0.3em;
+  border: #ffe0bb dotted 1px;
+  margin: 1em;
+  background: #fffde8;
+}
+
+a {
+  color: #00F;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #333;
+  background: #FE8;
+}
+
+li {
+  padding: 5px;
+}
+
+.condensed li {
+  padding: 0px;
+}
+
+table {
+  border-width: 1px;
+  border-spacing: 2px;
+  border-style: outset;
+  border-collapse: collapse;
+}
+table th {
+  border-width: 1px;
+  padding: 5px;
+  border-style: inset;
+  background-color: #EEEEEE;
+}
+table td {
+  border-width: 1px;
+  padding: 5px;
+  border-style: inset;
+}
+
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <h1>ODK Manage - Design Doc</h1>
+</div>
+
+<div class="contents">
+<h1>Objective</h1>
+<i>
+What are you trying to accomplish? <br/> 
+Why are you trying to do it?
+</i>
+<p/>
+
+The objective of ODK Manage is to allow the remote management of a set of Android devices (ODK clients) from a central web tool. 
+It will allow deployment supervisors to remotely configure their workers' phones with new forms, 
+new data (to be used by the forms, or even just files for background information) and new applications 
+(for in-the-field upgrades). It will also allow supervisors to keep track of the status of devices and operators throughout a deployment.
+
+<h1>Background</h1>
+<i>
+Stuff one needs to know to understand this doc: motivating examples, previous versions and problems, links to related projects/design docs, etc. <br/>
+Note: this is background; do not write about your design or ideas to solve problems here.
+</i>
+<p>
+ODK Manage is a component of Open Data Kit. See the <a href="???">Open Data Kit Design Doc</a> for general information about ODK and the role of ODK Manage.
+</p><p>
+For large ODK deployments, consisting of hundreds of phones spread over large geographic regions, keeping track of deployed phones and keeping forms, data, 
+and software up-to-date is a significant logistical challenge. In a pilot study at Grameen App Lab in Uganda involving about 30 operators, 
+deploying each new version of the software and forms required hiring a technical specialist to travel to each operator site and update/configure their phone. 
+As a result, we were only able to push one (?) upgrade of the forms and software to the phone throughout the three-month deployment. 
+This resulted in a slow response to technical or usability bugs and a reduced possibility for design iteration. 
+In addition, the lack of any centralized information about device/operator status made it difficult to recognize and respond to issues such as broken or lost phones (?). 
+As ODK scales to larger deployments, these logistical difficulties will become even more serious.
+</p><p>
+[How are these logistics currently handled in other platforms, e.g. JavaRosa? --alerer]
+</p>
+<h1>Overview</h1>
+<i>
+One page high-level overview; put details in the next section and background in the previous section. Should be understandable by a new Google engineer not working on the project.
+</i>
+<p>
+ODK Manage will provide central, remote management of mobile devices and operators throughout a deployment. The following remote tasks will be enabled by Manage:
+</p>
+<ul>
+  <li>View device information for all devices throughout a deployment (e.g. IMEI, phone number, current operator, etc.)</li>
+  <li>View device status throughout a deployment (e.g. location, network connectivity, software and forms on the device, etc.)</li>
+  <li>Add, update, or delete forms from device.</li>
+  <li>Install, update, or delete software packages from devices.</li>
+</ul>
+
+As ODK develops, new applications will develop for the Manage application, for example:
+
+<ul>
+    <li>Closer supervision of phone operators (e.g. how many forms has an operator submitted today? this week?)</li>
+    <li>Pushing operator tasks to the phone (e.g. visit houses x, y, and z today).</li>
+    <li>Pushing/pulling data from the phone (e.g. patient records)</li>
+</ul>
+
+<p>
+The ODK Manage web application UI must allow supervisors to monitor all the phones in a deployment from a central page. 
+For example, a table view could be used to display all the devices. The UI must also allow a supervisor to quickly organize 
+devices into 'device groups' so that updates can be pushed to these groups as a whole. For example, a new AIDS survey may 
+need to be pushed to the group of devices involved in AIDS monitoring.
+</p><p>
+The ODK Manage Android application will have as little UI as possible, since it should be as transparent as 
+possible to phone operators. A bare-bones UI will probably be needed for initial phone configuration by a trained worker.
+</p><p>
+The ODK Manage Android client must function in an environment where data connection is intermittent and occurs over 
+multiple modalities, each with their own limitations and fiscal cost. Therefore, the client must be capable of storing 
+pending tasks until they can be executed. It also must be aware of network connectivity, and attempt to perform 
+pending tasks that require connectivity when it becomes available. Eventually, the client should support SMS push of 
+tasks from the server rather than constantly polling for new tasks. The client should also eventually be capable of 
+intelligently deciding how to efficiently utilize different connection types (e.g. more urgent tasks can be performed 
+over mobile networks, while less urgent tasks can wait for wifi or USB).
+</p>
+
+<h1>Infrastructures(s)</h1>
+<i>
+Describe which existing infrastructure using, and how they will interact.  
+Describe in sufficient details whatever new pieces you're adding. 
+</i>
+
+<ul>
+  <li><strong>Android</strong> - Highly capable mobile phone platform that includes GPS and camera for generating input data.  
+Touch screen and qwerty keyboard provide rich UI possibilities. Well-integrated SMS, GPRS, and WiFi support provide several options for data transport.</li>
+  <li><strong>Google App Engine</strong> - The primary model for ODK Manage's server side. We will use the Java SDK to keep the ODK codebase all in Java.</li>
+</ul>
+
+<h1>Detailed Design</h1>
+<p>
+ODK Manage contains two components: the mobile client (implemented on Android) and the server (implemented on appengine/GWT). 
+The interaction workflow between these two components is illustrated in Figure 1.
+</p>
+
+<img src='odk-manage-component-diagram.png'/><br/>
+<i>
+Figure 1: A diagram of the interactions between the client and server components of ODK Manage. 
+The client registers with the server via a registration POST or SMS. Devices can be viewed in the admin console, and tasks added. 
+Task lists are sent to the manage service, which executes tasks and notifies the server of task status. 
+Not shown are triggers for the manage service, including SMS notification from the server and client connectivity change.
+</i>
+
+<h3>ODK Manage Client</h3>
+
+The Manage client is responsible for the following activities:
+<ol>
+   <li>Register device with the Manage server.</li>
+   <li>Retrieve new tasks from the server and perform them when resources (e.g. GPRS, wifi) are available.</li>
+   <li>Report back to server with task status and other device/operator status.</li>
+</ol>
+<p>
+The first component of the client is the AdminActivity. This is a simple Android Activity that allows Manage to be configured before or during use. 
+It includes text fields for entering the server domain name and SMS phone number, and buttons for registering the phone. 
+Registration may become automated in future versions, and this functionality may be wrapped into the ODKManageService.
+</p><p>
+The ODKManageService is the main component of the client. It is an Android Service - i.e., a permanent background process - 
+that looks for new tasks, executes them, and updates the server with its status. the ODKManageService has a (customizable?) 
+strategy for when to perform different actions based on the communication resources available.
+</p><p>
+The ODKManageService maintains a connection to an sqllite database, where it stores all tasks. 
+Task objects have the following fields: id, type, name, url, extras, status. Status may have the values PENDING, FAILED, or SUCCESS.
+</p><p>
+The Manage client also uses an IntentReceiver to detect (a) incoming SMS from the server, and (b) changes in GPRS, wifi, or other connectivity. 
+The IntentReceiver filters and parses these intents and alerts the ODKManageService of relevant events.
+</p>
+
+<h3>ODK Manage Server</h3>
+
+The Manage server is responsible for the following activities:
+<ol>
+   <li>Receive and persist registration information from the Manage client.</li>
+   <li>Present an administration console for viewing device information.</li>
+   <li>Allow for CRUD operations on tasks from the admin console.</li>
+   <li>Provide tasklists to clients.</li>
+   <li>Receive status updates from clients and display them on the admin console.</li>
+</ol>
+
+<p>
+The server uses JDO object persistence backed by the Google App Engine datastore. 
+The main data classes are Devices and Tasks. The Device class contains all information 
+about a particular device; device IMEI is used as the primary key for this class. 
+Each device has an associated list of Tasks. Each task has a type, a status, and other 
+optional (task-type specific) fields such as name and URL. Another data class called 
+DeviceGroup acts as a way of organizing devices into groups so that tasks can be performed 
+on groups of devices.
+</p><p>
+The Manage admin console is located at <i>/admin.html</i>. To access this page, users must 
+have their google email account listed in a configuration file in the ODKManage source 
+(this should be improved in a future version). The admin console provides a table view showing 
+information about all devices and allows administrators to organize devices into devices groups. 
+Tasks can then be added to individual devices, device groups, or to all devices. 
+The administrator can also send SMS to a device/group alerting it of new tasks.
+</p><p>
+The Manage server uses servlets to interact with clients. The <i>/register</i> URL accepts registration 
+messages, the <i>/tasklist</i> URL provides task lists to phones, and the <i>/update</i> URL accepts updates 
+from phones.
+</p><p>
+TODO: HOW DO WE IMPLEMENT SMS?
+</p>
+
+<h3>Client/Server Interface API</h3>
+
+<h4>Phone Registration</h4>
+<p>
+Phone registration occurs over either HTTP POST to the /register URI, or SMS with the "reg" keyword preceding the data. 
+The registration information is contained as a series of parameters (e.g. imei=12345&imsi=...) in either the POST or SMS body.
+</p>
+
+<table>
+<tr><th>Name</th><th>Required</th><th>Type</th><th>Description</th></tr>
+<tr><td>imei</td><td>Yes</td><td>string</td><td>The device IMEI.</td></tr>
+<tr><td>phonenumber</td><td>No</td><td>string</td><td>The device phone number.</td></tr>
+<tr><td>sim</td><td>No</td><td>string</td><td>The device SIM serial number.</td></tr>
+<tr><td>imsi</td><td>No</td><td>string</td><td>The device phone number.</td></tr>
+<tr><td>userid</td><td>No</td><td>string</td><td>The user ID set in the client settings.</td></tr>
+</table>
+
+
+<h4>Tasklist</h4>
+<p>
+A list of tasks is communicated from the server to the client via XML. The tasklist is requested from the server with a GET request to: <i>/tasklist?imei={imei}</i>.
+</p><p>
+The format for the tasklist is as follows:
+<div class='box'>
+<b>
+&lt;tasklist imei={string}&gt;<br/>
+&nbsp;&nbsp;&lt;task id={long} type={TaskType}  ?name={string} ?url={anyUri} ?extras={string}/&gt;<br/>
+...
+&lt;/tasklist&gt;<br/>
+</b>
+</div>
+<p>
+The name, url, and extras fields are optional and based on the task type.
+</p><p>
+It is not clear whether other types of data may be required in a task element. 
+Perhaps tasks require arbitrary properties (e.g. <property name=... value=...>) 
+or binary data? Open for discussion.
+</p><p>
+Attributes mean different things for different task types. Here's a breakdown:
+</p>
+<table>
+<tr><th>Task Type</th><th>Name</th><th>URL</th><th>Extras</th></tr>
+<tr><td>ADD_FORM</td><td>form name or null</td><td>form download URL</td><td>null</td></tr>
+<tr><td>INSTALL_PACKAGE</td><td>package name (e.g. "org.odk.collect.android")</td><td>package download URL</td><td>null</td></tr>
+</table>
+
+A sample tasklist is below:
+<div class='box'>
+<b>
+&lt;tasklist imei="351677030042089"&gt;<br/>
+&nbsp;&nbsp;&lt;task id="-2026936769" type="INSTALL_PACKAGE" url="http://web.mit.edu/alerer/Public/ODKCollect.apk"/&gt;<br/>
+&nbsp;&nbsp;&lt;task id="-2027895847" type="ADD_FORM" url="http://www.cs.washington.edu/homes/yanokwa/forms/training_form_7.xml"/&gt;<br/>
+&lt;/tasklist&gt;
+</b>
+</div>
+
+<h4>Client Update to Server</h4>
+<p>
+The client can update its status to the server via HTTP POST.
+</p><p>
+The format for a client update is as follows:
+</p>
+<div class='box'>
+<b>
+&lt;update imei={string} ?location={latlng}&gt;<br/>
+&nbsp;&nbsp;&lt;task id={long} status={TaskStatus}/&gt;<br/>
+...<br/>
+&lt;/update&gt;<br/>
+</b>
+</div>
+
+<h3>Client/Server Authentication</h3>
+<p>
+Server HTTP authentication is unnecessary because the client polls locations on the 
+server (we are not worried about man-in-the-middle attacks, etc. at the moment). 
+Over SMS, server authentication can be performed by looking at the sender 
+phone number. The server domain and SMS # are registered with the phone so these 
+authentication steps can be performed.
+</p><p>
+Client authentication is less important than server authentication in v1, because 
+a malicious client cannot cause undesirable server behavior (whereas a malicious 
+server could cause arbitrary packages to be downloaded on the client, etc.) In 
+later versions, client authentication (e.g. username/password) will be required.
+</p><p>
+The server admin page does require authentication. In v1, admin page access will 
+be limited to a set of email addresses hard-coded in an appengine configuration 
+file. Full user management will be implemented in a later version.
+
+
+<h1>Development Track</h1>
+
+<strong>Version 0:</strong>
+<ul class='condensed'>
+  <li>Phone tracking
+    <ul>
+      <li>Device information (IMEI, etc.)</li>
+      <li>Tasks</li>
+    </ul>
+  </li>
+  <li>Create Tasks
+    <ul>
+      <li>Add/update form</li>
+      <li>Add/update package</li>
+    </ul>
+  </li>
+  <li>Communication over HTTP (GPRS/Wifi)</li>
+  <li>Client persists pending tasks locally, executes when possible.</li>
+  <li>Scales to 300 devices.</li>
+</ul>
+
+<strong>Version 1:</strong>
+<ul class='condensed'>
+  <li>Delete tasks</li>
+  <li>Device reports status (e.g. which tasks are complete or failed) back to the server.</li>
+  <li>Client strategy to determine when a task has 'failed' and when to keep trying.</li>
+  <li>Phone tracking
+    <ul>
+      <li>Time of last check-in</li>
+      <li>Device GPS location at last check-in</li>
+      <li>Status of tasks (pending, completed, failed</li>
+    </ul>
+  </li>
+
+  <li>Communication over SMS</li>
+</ul>
+
+<strong>Version 2:</strong>
+<ul class='condensed'>
+  <li>Create Tasks
+    <ul>
+      <li>Delete Form</li>
+      <li>Force answer submission (which submissions?)</li>
+    </ul>
+  </li>
+   <li>Device Groups</li>
+  <li>Integration with ODK Aggregate</li>
+  <li>Admin user management (e.g. who can access admin page)</li>
+</ul>
+
+<strong>Version 3:</strong>
+<ul class='condensed'>
+  <li>Tasks
+    <ul>
+      <li>Add events to calendar</li>
+    </ul>
+  </li>
+  <li>Phone tracking
+    <ul>
+      <li>Statistics</li>
+    </ul>
+  </li>
+  <li>Intelligent, customizable communication usage strategy (e.g. when to use GPRS vs WIFI)</li>
+
+<h1>Project Information</h1>
+<p>
+For project information about ODK please visit: <a href="http://code.google.com/p/open-data-kit/trunk/odk-manage">http://code.google.com/p/open-data-kit/trunk/odk-manage</a>
+</p>
+
+
+<h1>People</h1>
+<ul>
+    <li>Gaetano Borriello - project co-lead (public health) - visiting scientist - SEA (Jul'08-Sep'09)</li>
+    <li>Julie Chin - project manager - SFO</li>
+    <li>Adam Lerer - developer - intern - MTV (May-Aug'08, Jan'09, Jun-Aug'09)</li>
+    <li>Carl Hartung - developer - intern - SEA (Jun'08-Sep'09)</li>
+    <li>Yaw Anokwa - developer - intern - SEA (Sep'08-Sep'09)</li>
+    <li>Waylon Brunette - developer - intern - SEA (May'09, Aug'09)</li>
+</ul>
+<p>
+Currently, Adam Lerer is assigned to development/maintenance for ODK Manage.
+</p><p>
+Code location: http://code.google.com/p/open-data-kit/trunk/odk-manage
+</p><p>
+Note: we fully expect all code generated by the ODK project to be made available to the open source community.
+</p>
+</div>
+</body>
+</html>
