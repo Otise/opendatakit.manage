@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+    "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+
+  <!-- Default page to serve -->
+  <welcome-file-list>
+    <welcome-file>admin.html</welcome-file>
+  </welcome-file-list>
+  
+  <!-- Servlets -->
+  
+  <servlet>
+    <servlet-name>taskListServlet</servlet-name>
+    <servlet-class>org.odk.manage.server.servlet.TaskListServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>taskListServlet</servlet-name>
+    <url-pattern>/tasklist</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>registerServlet</servlet-name>
+    <servlet-class>org.odk.manage.server.servlet.RegisterServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>registerServlet</servlet-name>
+    <url-pattern>/register</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>addTaskServlet</servlet-name>
+    <servlet-class>org.odk.manage.server.servlet.AddTaskServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>addTaskServlet</servlet-name>
+    <url-pattern>/addTask</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>adminServlet</servlet-name>
+    <servlet-class>org.odk.manage.server.servlet.ManageAdminServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>adminServlet</servlet-name>
+    <url-pattern>/admin.html</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>deviceUpdateServlet</servlet-name>
+    <servlet-class>org.odk.manage.server.servlet.DeviceUpdateServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>deviceUpdateServlet</servlet-name>
+    <url-pattern>/update</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>doActionServlet</servlet-name>
+    <servlet-class>org.odk.manage.server.servlet.DoActionServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>doActionServlet</servlet-name>
+    <url-pattern>/doAction</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>viewTasksServlet</servlet-name>
+    <servlet-class>org.odk.manage.server.servlet.ViewTasksServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>viewTasksServlet</servlet-name>
+    <url-pattern>/viewTasks</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>deleteTasksServlet</servlet-name>
+    <servlet-class>org.odk.manage.server.servlet.DeleteTasksServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>deleteTasksServlet</servlet-name>
+    <url-pattern>/deleteTasks</url-pattern>
+  </servlet-mapping>
+
+</web-app>
