@@ -99,7 +99,7 @@ public class HttpAdapter {
     for (String paramKey : params.keySet())
       mFieldList.add(new BasicNameValuePair(paramKey, params.get(paramKey)));
 
-    DefaultHttpClient httpclient = new DefaultHttpClient();
+    // DefaultHttpClient httpclient = new DefaultHttpClient();
     HttpPost mypost = new HttpPost(url);
 
     try {
