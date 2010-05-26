@@ -40,7 +40,7 @@ public class DoActionServlet extends ServletUtilBase {
   public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     
     // authenticate the user as an admin
-    if (!AdminAccountsConfig.authenticateAdmin(req, resp)) {
+    if (!AdminAccountsConfig.authenticateAdmin(this, req, resp)) {
       return;
     }
     

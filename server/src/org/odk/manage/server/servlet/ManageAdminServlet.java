@@ -56,7 +56,7 @@ public class ManageAdminServlet extends ServletUtilBase {
   public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     
     // authenticate the user as an admin
-    if (!AdminAccountsConfig.authenticateAdmin(req, resp)) {
+    if (!AdminAccountsConfig.authenticateAdmin(this, req, resp)) {
       return;
     }
     
@@ -237,7 +237,7 @@ public class ManageAdminServlet extends ServletUtilBase {
   public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     
     // authenticate the user as an admin
-    if (!AdminAccountsConfig.authenticateAdmin(req, resp)) {
+    if (!AdminAccountsConfig.authenticateAdmin(this, req, resp)) {
       return;
     }
     
